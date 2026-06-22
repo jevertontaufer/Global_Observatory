@@ -1,0 +1,17 @@
+{
+  "name": "observatorio-tecnologia-global",
+  "version": "2.0.0",
+  "description": "Observatório de Tecnologia Global — site + backend (fornecedores compartilhados, notícias, cotação e IA).",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.22.2",
+    "web-push": "^3.6.7"
+  }
+}
