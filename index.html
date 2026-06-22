@@ -55,6 +55,9 @@
   .tv-enter-btn{font-family:var(--mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;padding:0.4rem 0.7rem;cursor:pointer;transition:color .15s,border-color .15s;display:flex;align-items:center;gap:6px}
   .tv-enter-btn:hover{color:var(--text);border-color:var(--phosphor)}
   .tv-enter-btn:focus-visible{outline:2px solid var(--hot);outline-offset:2px}
+  /* o botão "Modo painel" só faz sentido num desktop que comanda uma TV — esconder no celular */
+  @media (max-width:768px){ #tv-enter{display:none} }
+  @media (hover:none) and (pointer:coarse){ #tv-enter{display:none} }
 
   .pulse{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
   .pulse .cell{background:var(--ink);padding:1.1rem 1.25rem}
