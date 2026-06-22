@@ -1229,7 +1229,7 @@ document.querySelectorAll(".lang-switch button").forEach(b=>{
     if(ta) facts+='<div class="tv-fact"><div class="k">'+esc(t().tv.topArea)+'</div><div class="v grow">+'+ta.g+'%'+esc(t().perYr)+'</div><div class="s">'+esc(ta.nm[LANG])+'</div></div>';
     facts+='<div class="tv-fact"><div class="k">2026</div><div class="v">'+ALL_FAIRS.length+'</div><div class="s">'+esc(t().tv.mapped)+'</div></div>';
     facts+='</div>';
-    return eyebrow(t().tv.brief,briefTag)+'<div class="tv-brief-text">'+esc(briefText||localBrief())+'</div>'+facts;
+    return eyebrow(t().tv.brief)+'<div class="tv-brief-text">'+esc(briefText||localBrief())+'</div>'+facts;
   }
   function renderFx(){
     let body='';
