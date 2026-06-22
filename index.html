@@ -51,6 +51,10 @@
   .lang-switch button{font-family:var(--mono);font-size:11px;letter-spacing:0.04em;background:transparent;border:0;color:var(--muted);padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;transition:all .15s}
   .lang-switch button:hover{color:var(--text)}
   .lang-switch button[aria-pressed="true"]{background:var(--phosphor);color:#fff}
+  .head-controls{display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;justify-content:flex-end}
+  .tv-enter-btn{font-family:var(--mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;padding:0.4rem 0.7rem;cursor:pointer;transition:color .15s,border-color .15s;display:flex;align-items:center;gap:6px}
+  .tv-enter-btn:hover{color:var(--text);border-color:var(--phosphor)}
+  .tv-enter-btn:focus-visible{outline:2px solid var(--hot);outline-offset:2px}
 
   .pulse{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
   .pulse .cell{background:var(--ink);padding:1.1rem 1.25rem}
@@ -87,6 +91,10 @@
   .ask-chip:hover{border-color:var(--line-2);color:var(--text)}
   .ask-out{margin-top:1rem;border-top:1px solid var(--line);padding-top:0.9rem;display:none}
   .ask-out.show{display:block}
+  .ask-out-head{display:flex;justify-content:flex-end;margin-bottom:0.5rem}
+  .ask-close{font-family:var(--mono);font-size:13px;line-height:1;color:var(--faint);background:transparent;border:1px solid var(--line);border-radius:6px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s,border-color .15s;flex:none}
+  .ask-close:hover{color:var(--text);border-color:var(--line-2)}
+  .ask-close:focus-visible{outline:2px solid var(--hot);outline-offset:1px}
   .ask-ai{font-size:0.92rem;color:var(--text);line-height:1.6;white-space:pre-wrap}
   .ask-ai-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--phosphor);margin-bottom:0.5rem}
   .ask-hits{display:flex;flex-direction:column;gap:0.4rem;margin-top:0.8rem}
@@ -245,6 +253,82 @@
 
   @media (max-width:680px){ .fair-list{grid-template-columns:1fr} .clock-box{text-align:left} .head-right{align-items:flex-start} }
   @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;scroll-behavior:auto} }
+  /* ============================================================
+     MODO PAINEL (TV na parede) — tela cheia, tipografia de telão
+     ============================================================ */
+  body.tv-active{overflow:hidden;cursor:none}
+  body.tv-active.tv-cursor{cursor:default}
+  #tv-panel{position:fixed;inset:0;z-index:9000;display:none;flex-direction:column;
+    background:radial-gradient(120% 90% at 80% -10%,#10151f 0%,var(--ink) 55%);
+    color:var(--text);padding:3.2vmin 4vmin;font-family:var(--body)}
+  body.tv-active #tv-panel{display:flex}
+  .tv-top{display:flex;justify-content:space-between;align-items:center;gap:2vmin;border-bottom:1px solid var(--line);padding-bottom:2vmin}
+  .tv-brand{display:flex;align-items:center;gap:1.4vmin;min-width:0}
+  .tv-brand .tv-mark{width:4.2vmin;height:4.2vmin;flex:none}
+  .tv-brand .tv-name{font-family:var(--display);font-weight:600;font-size:2.5vmin;letter-spacing:-0.01em;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tv-clockwrap{display:flex;align-items:center;gap:1.4vmin;font-family:var(--mono);flex:none}
+  .tv-live{display:flex;align-items:center;gap:0.8vmin;font-size:1.5vmin;letter-spacing:0.16em;text-transform:uppercase;color:var(--up)}
+  .tv-live .d{width:1.1vmin;height:1.1vmin;border-radius:50%;background:var(--up);box-shadow:0 0 0 0 rgba(63,185,80,.6);animation:tvpulse 2s infinite}
+  @keyframes tvpulse{0%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}70%{box-shadow:0 0 0 1.4vmin rgba(63,185,80,0)}100%{box-shadow:0 0 0 0 rgba(63,185,80,0)}}
+  #tv-clock{font-size:2.2vmin;color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+  .tv-exit{position:absolute;top:3vmin;right:4vmin;z-index:9100;font-family:var(--mono);font-size:1.4vmin;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);background:rgba(20,20,22,.8);border:1px solid var(--line-2);border-radius:8px;padding:0.8vmin 1.4vmin;cursor:pointer;opacity:0;transition:opacity .25s}
+  body.tv-active.tv-cursor .tv-exit{opacity:1}
+  .tv-stage{flex:1;position:relative;min-height:0}
+  .tv-scene{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;opacity:0;transform:translateY(1.4vmin);transition:opacity .6s ease,transform .6s ease;pointer-events:none}
+  .tv-scene.on{opacity:1;transform:none}
+  .tv-eyebrow{font-family:var(--mono);font-size:1.7vmin;letter-spacing:0.24em;text-transform:uppercase;color:var(--phosphor);display:flex;align-items:center;gap:1.2vmin;margin-bottom:2.4vmin}
+  .tv-eyebrow .tag2{color:var(--faint)}
+  .tv-eyebrow .spark{color:var(--phosphor)}
+
+  /* cena BRIEFING */
+  .tv-brief-text{font-family:var(--display);font-weight:600;font-size:clamp(2rem,5.4vmin,6rem);line-height:1.16;letter-spacing:-0.015em;max-width:88%}
+  .tv-brief-text .hl{color:var(--phosphor)}
+  .tv-brief-facts{display:flex;gap:2.4vmin;margin-top:5vmin;flex-wrap:wrap}
+  .tv-fact{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:2.2vmin 2.6vmin;min-width:24vmin}
+  .tv-fact .k{font-family:var(--mono);font-size:1.5vmin;letter-spacing:0.14em;text-transform:uppercase;color:var(--faint)}
+  .tv-fact .v{font-family:var(--display);font-weight:600;font-size:3vmin;margin-top:0.8vmin;line-height:1.05}
+  .tv-fact .s{font-size:1.7vmin;color:var(--muted);margin-top:0.5vmin}
+  .tv-fact .v.grow{color:var(--up)}
+
+  /* cena CÂMBIO */
+  .tv-fx{display:grid;grid-template-columns:repeat(3,1fr);gap:2.6vmin}
+  .tv-fx-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:3.4vmin 3vmin}
+  .tv-fx-card .pair{font-family:var(--mono);font-size:1.8vmin;letter-spacing:0.1em;color:var(--muted)}
+  .tv-fx-card .big{font-family:var(--display);font-weight:600;font-size:clamp(2.4rem,7vmin,8rem);line-height:1;margin:1.6vmin 0;font-variant-numeric:tabular-nums}
+  .tv-fx-card .chg{font-family:var(--mono);font-size:2.4vmin;font-weight:500}
+  .tv-fx-card .chg.up{color:var(--up)} .tv-fx-card .chg.down{color:var(--down)} .tv-fx-card .chg.flat{color:var(--muted)}
+  .tv-fx-card .sub{font-size:1.6vmin;color:var(--faint);margin-top:1.2vmin;font-family:var(--mono)}
+
+  /* cena FEIRAS */
+  .tv-fairs{display:flex;flex-direction:column;gap:1.8vmin}
+  .tv-fair-row{display:flex;align-items:center;gap:2.6vmin;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:2.2vmin 2.8vmin}
+  .tv-fair-when{font-family:var(--mono);font-size:2vmin;font-weight:600;color:#fff;border-radius:9px;padding:1vmin 1.6vmin;min-width:18vmin;text-align:center;flex:none}
+  .tv-fair-when.up{background:rgba(63,185,80,.16);color:var(--up);border:1px solid rgba(63,185,80,.4)}
+  .tv-fair-when.now{background:rgba(76,141,255,.18);color:var(--now);border:1px solid rgba(76,141,255,.45)}
+  .tv-fair-body{min-width:0;flex:1}
+  .tv-fair-nm{font-family:var(--display);font-weight:600;font-size:clamp(1.4rem,3.3vmin,3.4rem);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tv-fair-meta{font-size:1.9vmin;color:var(--muted);margin-top:0.5vmin}
+  .tv-fair-meta .ar{color:var(--text)}
+
+  /* cena ÁREAS */
+  .tv-areas{display:flex;flex-direction:column;gap:1.7vmin}
+  .tv-area-row{display:grid;grid-template-columns:minmax(0,1fr) 22vmin 11vmin;align-items:center;gap:2.4vmin}
+  .tv-area-nm{font-family:var(--display);font-weight:600;font-size:clamp(1.3rem,3vmin,3rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tv-area-nm small{display:block;font-family:var(--body);font-weight:400;font-size:1.7vmin;color:var(--muted);margin-top:0.3vmin}
+  .tv-area-bar{height:2vmin;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden}
+  .tv-area-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--phosphor),#ff6b4a);width:0;transition:width 1s ease}
+  .tv-area-val{font-family:var(--mono);font-size:3.2vmin;font-weight:600;text-align:right;color:var(--up)}
+
+  /* rodapé: progresso + ticker */
+  .tv-bottom{border-top:1px solid var(--line);padding-top:2vmin;display:flex;align-items:center;gap:2.4vmin}
+  .tv-dots{display:flex;gap:1vmin;flex:none}
+  .tv-dots button{width:1.4vmin;height:1.4vmin;border-radius:50%;border:0;background:var(--panel-3);cursor:pointer;padding:0;transition:background .2s,width .3s}
+  .tv-dots button.on{background:var(--phosphor);width:3.4vmin;border-radius:7px}
+  .tv-ticker{flex:1;overflow:hidden;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+  .tv-ticker .track{display:inline-block;padding-left:100%;animation:tvscroll 38s linear infinite;font-family:var(--mono);font-size:1.7vmin;color:var(--muted)}
+  .tv-ticker .track .sep{color:var(--phosphor);margin:0 1.4vmin}
+  @keyframes tvscroll{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+  @media (prefers-reduced-motion:reduce){.tv-ticker .track{animation:none}.tv-live .d{animation:none}}
 </style>
 </head>
 <body>
@@ -256,10 +340,13 @@
       <h1 data-i18n="title">Observatório de Tecnologia Global</h1>
     </div>
     <div class="head-right">
-      <div class="lang-switch" role="group" aria-label="Idioma">
-        <button type="button" data-lang="pt" aria-pressed="true">PT</button>
-        <button type="button" data-lang="en" aria-pressed="false">EN</button>
-        <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      <div class="head-controls">
+        <button type="button" id="tv-enter" class="tv-enter-btn">▦ <span data-i18n-tv="enter">Modo painel</span></button>
+        <div class="lang-switch" role="group" aria-label="Idioma">
+          <button type="button" data-lang="pt" aria-pressed="true">PT</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+          <button type="button" data-lang="es" aria-pressed="false">ES</button>
+        </div>
       </div>
       <div class="clock-box">
         <div class="lbl" data-i18n="clockLabel">Hora atual (local)</div>
@@ -461,12 +548,13 @@ const FX_API="https://economia.awesomeapi.com.br/json/last/"+FX_PAIRS.map(p=>p.a
 const I18N={
   pt:{
     locale:"pt-BR",
+    tv:{enter:"Modo painel",exit:"Sair do painel",brief:"Briefing",fx:"Câmbio ao vivo",fairs:"Próximas feiras",areas:"Áreas em maior alta",ai:"Síntese por IA",local:"Síntese automática",next:"Próxima feira",topArea:"Maior alta",mapped:"feiras mapeadas para 2026",composing:"Compondo o briefing…",updated:"Atualizado",noFx:"Cotação indisponível"},
     eyebrow:"", title:"Observatório de Tecnologia Global", clockLabel:"Hora atual (local)",
     p_autoIA:"Automação com IA", p_iaInd:"IA industrial", p_robos:"Robôs em operação", p_asia:"Novas instalações na Ásia",
     verified:"verificado em",
     askEyebrow:"Pergunte ao observatório", askPlaceholder:"ex.: feiras de automação na Europa no 2º semestre",
     askGo:"Perguntar", askThinking:"Consultando…", askLocalTag:"Resposta local", askAiTag:"Resumo por IA",
-    askNoHits:"Nada encontrado para esses termos. Tente outra área, continente ou mês.",
+    askNoHits:"Nada encontrado para esses termos. Tente outra área, continente ou mês.", askClose:"Fechar resultados",
     askChips:["feiras de IA no Brasil","automação na Europa","o que acontece agora","área que mais cresce"],
     fairsTitle:"Feiras de tecnologia", fairsIntro:"Calendário de 2026 por continente.",
     exportAll:"Exportar agenda (.ics)", pushEnable:"Ativar avisos", pushOn:"Avisos ativados ✓", pushDenied:"Permissão negada", pushError:"Não foi possível ativar", legUp:"vão ocorrer", legNow:"acontecendo agora", legPast:"encerradas",
@@ -492,12 +580,13 @@ const I18N={
   },
   en:{
     locale:"en-US",
+    tv:{enter:"Display mode",exit:"Exit display",brief:"Briefing",fx:"Live FX",fairs:"Upcoming fairs",areas:"Top-growth areas",ai:"AI synthesis",local:"Auto synthesis",next:"Next fair",topArea:"Fastest growing",mapped:"fairs mapped for 2026",composing:"Composing the briefing…",updated:"Updated",noFx:"Rates unavailable"},
     eyebrow:"", title:"Global Technology Observatory", clockLabel:"Current time (local)",
     p_autoIA:"AI automation", p_iaInd:"Industrial AI", p_robos:"Robots in operation", p_asia:"New installs in Asia",
     verified:"verified",
     askEyebrow:"Ask the observatory", askPlaceholder:"e.g. automation fairs in Europe in H2",
     askGo:"Ask", askThinking:"Looking…", askLocalTag:"Local answer", askAiTag:"AI summary",
-    askNoHits:"Nothing matched those terms. Try another area, continent or month.",
+    askNoHits:"Nothing matched those terms. Try another area, continent or month.", askClose:"Close results",
     askChips:["AI fairs in Brazil","automation in Europe","what's happening now","fastest-growing area"],
     fairsTitle:"Tech fairs", fairsIntro:"2026 calendar by continent.",
     exportAll:"Export calendar (.ics)", pushEnable:"Enable alerts", pushOn:"Alerts on ✓", pushDenied:"Permission denied", pushError:"Could not enable", legUp:"upcoming", legNow:"happening now", legPast:"finished",
@@ -523,12 +612,13 @@ const I18N={
   },
   es:{
     locale:"es-ES",
+    tv:{enter:"Modo panel",exit:"Salir del panel",brief:"Briefing",fx:"Cambio en vivo",fairs:"Próximas ferias",areas:"Áreas en mayor alza",ai:"Síntesis por IA",local:"Síntesis automática",next:"Próxima feria",topArea:"Mayor alza",mapped:"ferias mapeadas para 2026",composing:"Componiendo el briefing…",updated:"Actualizado",noFx:"Cotización no disponible"},
     eyebrow:"", title:"Observatorio de Tecnología Global", clockLabel:"Hora actual (local)",
     p_autoIA:"Automatización con IA", p_iaInd:"IA industrial", p_robos:"Robots en operación", p_asia:"Nuevas instalaciones en Asia",
     verified:"verificado el",
     askEyebrow:"Pregunta al observatorio", askPlaceholder:"ej.: ferias de automatización en Europa en el 2º semestre",
     askGo:"Preguntar", askThinking:"Consultando…", askLocalTag:"Respuesta local", askAiTag:"Resumen por IA",
-    askNoHits:"Nada coincide con esos términos. Prueba otra área, continente o mes.",
+    askNoHits:"Nada coincide con esos términos. Prueba otra área, continente o mes.", askClose:"Cerrar resultados",
     askChips:["ferias de IA en Brasil","automatización en Europa","qué pasa ahora","área que más crece"],
     fairsTitle:"Ferias de tecnología", fairsIntro:"Calendario 2026 por continente.",
     exportAll:"Exportar agenda (.ics)", pushEnable:"Activar avisos", pushOn:"Avisos activados ✓", pushDenied:"Permiso denegado", pushError:"No se pudo activar", legUp:"próximas", legNow:"en curso", legPast:"finalizadas",
@@ -787,10 +877,18 @@ function localAnswer(query){
   }
   return {fairs:fairs.slice(0,12),areas:areas.slice(0,4)};
 }
+function askHeadHtml(){
+  return '<div class="ask-out-head"><button class="ask-close" type="button" aria-label="'+esc(t().askClose)+'" title="'+esc(t().askClose)+'">✕</button></div>';
+}
+function closeAsk(){
+  const out=document.getElementById("ask-out");
+  out.classList.remove("show");
+  out.innerHTML="";
+}
 function renderAskResults(res,aiText){
   const out=document.getElementById("ask-out");
   out.classList.add("show");
-  let html="";
+  let html=askHeadHtml();
   if(aiText){ html+='<div class="ask-ai-tag">'+esc(t().askAiTag)+'</div><div class="ask-ai">'+esc(aiText)+'</div>'; }
   const hits=[];
   res.areas.forEach(a=>{
@@ -815,10 +913,16 @@ async function runAsk(){
   // tenta IA no backend; se falhar, mostra só o resultado local
   const out=document.getElementById("ask-out");
   out.classList.add("show");
-  out.innerHTML='<div class="ask-empty">'+esc(t().askThinking)+'</div>';
+  out.innerHTML=askHeadHtml()+'<div class="ask-empty">'+esc(t().askThinking)+'</div>';
   let aiText=null;
   try{
-    const ctx={lang:LANG, fairs:res.fairs.map(f=>({nm:f.nm,disp:f.disp,loc:f.loc,area:f.area,status:statusText(f.st)})), areas:res.areas.map(a=>({nm:a.nm[LANG],stat:a.stat,growth:a.g}))};
+    const ctx={
+      lang:LANG,
+      fairs:res.fairs.map(f=>({nm:f.nm,disp:f.disp,loc:f.loc,area:f.area,status:statusText(f.st)})),
+      areas:res.areas.map(a=>({nm:a.nm[LANG],stat:a.stat,growth:a.g})),
+      allAreas:AREAS.map(a=>({nm:a.nm[LANG],stat:a.stat,growth:a.g,emerging:!!a.est})),
+      totalFairs:ALL_FAIRS.length
+    };
     const r=await fetch(API_BASE+"/api/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({q:query,context:ctx})});
     if(r.ok){const d=await r.json();aiText=(d.answer||"").trim()||null;}
   }catch(e){ aiText=null; }
@@ -834,6 +938,7 @@ function buildAskChips(){
 }
 document.getElementById("ask-go").addEventListener("click",runAsk);
 document.getElementById("ask-input").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();runAsk();}});
+document.getElementById("ask-out").addEventListener("click",e=>{if(e.target.closest(".ask-close")){closeAsk();}});
 
 /* ============================================================
    COTAÇÃO + estados + contagem regressiva + conversor
@@ -1054,16 +1159,194 @@ function applyI18n(){
   document.documentElement.lang=t().locale;
   document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.getAttribute("data-i18n");if(typeof t()[k]==="string")el.textContent=t()[k];});
   document.querySelectorAll("[data-i18n-ph]").forEach(el=>{const k=el.getAttribute("data-i18n-ph");if(t()[k])el.setAttribute("placeholder",t()[k]);});
+  document.querySelectorAll("[data-i18n-tv]").forEach(el=>{const k=el.getAttribute("data-i18n-tv");if(t().tv&&t().tv[k])el.textContent=t().tv[k];});
   document.querySelectorAll(".lang-switch button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG?"true":"false"));
   renderPulse();renderAreas();renderFairs();buildAskChips();
   if(FX_LAST){renderFx(FX_LAST);}
   fillConvSelects();updateConverter();
   if(window.__supRefresh)window.__supRefresh();
+  if(window.__tvRefresh)window.__tvRefresh();
   tick();
 }
 document.querySelectorAll(".lang-switch button").forEach(b=>{
   b.addEventListener("click",()=>{LANG=b.dataset.lang;try{localStorage.setItem("otg_lang",LANG);}catch(e){}applyI18n();});
 });
+
+/* ============================================================
+   MODO PAINEL (TV na parede) — IA proativa + cenas auto-rotativas
+   ============================================================ */
+(function(){
+  const SCENE_MS=14000;
+  const BRIEF_REFRESH_MS=20*60*1000;
+  let built=false, sceneIdx=0, sceneTimer=null, briefTimer=null, tvClockTimer=null, cursorTimer=null, wakeLock=null;
+  let briefText="", briefTag="";
+
+  function upcomingFairs(){
+    return ALL_FAIRS.map(f=>({...f,st:fairStatus(f.s,f.e)})).filter(f=>f.st.k!=="past").sort((a,b)=>a.s<b.s?-1:1);
+  }
+  function areasByGrowth(){ return [...AREAS].sort((a,b)=>b.g-a.g); }
+  function localBrief(){
+    const nf=upcomingFairs()[0], ta=areasByGrowth()[0];
+    const areaS=ta?(t().tv.topArea+": "+ta.nm[LANG]+" +"+ta.g+"%"+t().perYr+"."):"";
+    const fairS=nf?(" "+t().tv.next+": "+nf.nm+" ("+statusText(nf.st)+") — "+nf.loc+"."):"";
+    return (areaS+fairS).trim();
+  }
+
+  function build(){
+    if(built) return;
+    const mark='<svg class="tv-mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="32" cy="32" r="22" fill="none" stroke="#F2F2F3" stroke-width="2.6"/><circle cx="32" cy="32" r="12.5" fill="none" stroke="#9A9AA0" stroke-width="1.5" opacity="0.6"/><path d="M32 32 L32 10 A22 22 0 0 1 52.7 24.6 Z" fill="#E5252A"/><circle cx="32" cy="32" r="3.3" fill="#E5252A"/></svg>';
+    const p=document.createElement("div");p.id="tv-panel";
+    p.innerHTML=
+      '<button class="tv-exit" id="tv-exit" type="button">✕ <span id="tv-exit-lbl"></span></button>'+
+      '<div class="tv-top"><div class="tv-brand">'+mark+'<div class="tv-name" id="tv-name"></div></div>'+
+        '<div class="tv-clockwrap"><span class="tv-live"><span class="d"></span></span><span id="tv-clock">—</span></div></div>'+
+      '<div class="tv-stage" id="tv-stage">'+
+        '<div class="tv-scene" id="tv-s-0"></div><div class="tv-scene" id="tv-s-1"></div>'+
+        '<div class="tv-scene" id="tv-s-2"></div><div class="tv-scene" id="tv-s-3"></div></div>'+
+      '<div class="tv-bottom"><div class="tv-dots" id="tv-dots"></div>'+
+        '<div class="tv-ticker"><div class="track" id="tv-ticker"></div></div></div>';
+    document.body.appendChild(p);
+    document.getElementById("tv-exit").addEventListener("click",exit);
+    built=true;
+  }
+
+  function eyebrow(tag,extra){
+    return '<div class="tv-eyebrow"><span class="spark">✦</span> '+esc(tag)+(extra?' <span class="tag2">· '+esc(extra)+'</span>':'')+'</div>';
+  }
+  function renderBrief(){
+    const nf=upcomingFairs()[0], ta=areasByGrowth()[0];
+    let facts='<div class="tv-brief-facts">';
+    if(nf) facts+='<div class="tv-fact"><div class="k">'+esc(t().tv.next)+'</div><div class="v">'+esc(nf.nm)+'</div><div class="s">'+esc(statusText(nf.st))+' · '+esc(nf.loc)+'</div></div>';
+    if(ta) facts+='<div class="tv-fact"><div class="k">'+esc(t().tv.topArea)+'</div><div class="v grow">+'+ta.g+'%'+esc(t().perYr)+'</div><div class="s">'+esc(ta.nm[LANG])+'</div></div>';
+    facts+='<div class="tv-fact"><div class="k">2026</div><div class="v">'+ALL_FAIRS.length+'</div><div class="s">'+esc(t().tv.mapped)+'</div></div>';
+    facts+='</div>';
+    return eyebrow(t().tv.brief,briefTag)+'<div class="tv-brief-text">'+esc(briefText||localBrief())+'</div>'+facts;
+  }
+  function renderFx(){
+    let body='';
+    if(!FX_LAST){ body='<div class="tv-brief-text">'+esc(t().tv.noFx)+'</div>'; }
+    else{
+      body='<div class="tv-fx">';
+      FX_PAIRS.slice(0,3).forEach(pr=>{
+        const d=FX_LAST[pr.key]; if(!d){return;}
+        const chg=parseFloat(d.pctChange)||0, bid=parseFloat(d.bid);
+        const cls=chg>0.01?"up":chg<-0.01?"down":"flat", arrow=cls==="up"?"▲":cls==="down"?"▼":"→";
+        body+='<div class="tv-fx-card"><div class="pair">'+esc(pr.sub)+'</div>'+
+          '<div class="big">'+esc(pr.symbol)+' '+fmtN(bid,4)+'</div>'+
+          '<div class="chg '+cls+'">'+arrow+' '+(chg>=0?"+":"")+chg.toFixed(2)+'%</div>'+
+          '<div class="sub">'+esc(pr.label[LANG])+'</div></div>';
+      });
+      body+='</div>';
+    }
+    return eyebrow(t().tv.fx)+body;
+  }
+  function renderFairsScene(){
+    let body='<div class="tv-fairs">';
+    upcomingFairs().slice(0,5).forEach(f=>{
+      body+='<div class="tv-fair-row"><div class="tv-fair-when '+f.st.k+'">'+esc(statusText(f.st))+'</div>'+
+        '<div class="tv-fair-body"><div class="tv-fair-nm">'+esc(f.nm)+'</div>'+
+        '<div class="tv-fair-meta">'+esc(f.loc)+' · <span class="ar">'+esc(f.area)+'</span></div></div></div>';
+    });
+    body+='</div>';
+    return eyebrow(t().tv.fairs)+body;
+  }
+  function renderAreasScene(){
+    const list=areasByGrowth().slice(0,6), max=list.length?list[0].g:1;
+    let body='<div class="tv-areas">';
+    list.forEach(a=>{
+      const w=Math.max(8,Math.round(a.g/max*100));
+      body+='<div class="tv-area-row"><div class="tv-area-nm">'+esc(a.nm[LANG])+'<small>'+esc(a.stat)+(a.est?esc(t().est):"")+'</small></div>'+
+        '<div class="tv-area-bar"><i style="width:'+w+'%"></i></div>'+
+        '<div class="tv-area-val">+'+a.g+'%</div></div>';
+    });
+    body+='</div>';
+    return eyebrow(t().tv.areas)+body;
+  }
+  const SCENES=[renderBrief,renderFx,renderFairsScene,renderAreasScene];
+
+  function renderScene(i){
+    sceneIdx=i;
+    const el=document.getElementById("tv-s-"+i); if(!el)return;
+    el.innerHTML=SCENES[i]();
+    for(let k=0;k<SCENES.length;k++){ document.getElementById("tv-s-"+k).classList.toggle("on",k===i); }
+    // anima as barras de áreas
+    if(i===3){ requestAnimationFrame(()=>el.querySelectorAll(".tv-area-bar i").forEach(b=>{const w=b.style.width;b.style.width="0";requestAnimationFrame(()=>b.style.width=w);})); }
+    document.querySelectorAll("#tv-dots button").forEach((b,k)=>b.classList.toggle("on",k===i));
+  }
+  function renderDots(){
+    const d=document.getElementById("tv-dots"); d.innerHTML="";
+    SCENES.forEach((_,i)=>{ const b=document.createElement("button");b.type="button";b.className=i===sceneIdx?"on":"";
+      b.addEventListener("click",()=>{renderScene(i);startRotation();}); d.appendChild(b); });
+  }
+  function buildTicker(){
+    const items=upcomingFairs().map(f=>esc(f.nm)+" — "+esc(f.disp)+" · "+esc(f.loc));
+    document.getElementById("tv-ticker").innerHTML=items.join('<span class="sep">◆</span>');
+  }
+  function startRotation(){ stopRotation(); sceneTimer=setInterval(()=>renderScene((sceneIdx+1)%SCENES.length),SCENE_MS); }
+  function stopRotation(){ if(sceneTimer)clearInterval(sceneTimer); sceneTimer=null; }
+
+  function tvClock(){ const el=document.getElementById("tv-clock"); if(!el)return;
+    el.textContent=new Intl.DateTimeFormat(t().locale,{weekday:"short",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(new Date()); }
+  function startTvClock(){ stopTvClock(); tvClock(); tvClockTimer=setInterval(tvClock,1000); }
+  function stopTvClock(){ if(tvClockTimer)clearInterval(tvClockTimer); tvClockTimer=null; }
+
+  async function fetchBrief(){
+    briefTag=t().tv.composing; if(!briefText)briefText=localBrief();
+    if(sceneIdx===0)renderScene(0);
+    const ctx={lang:LANG,date:new Date().toISOString().slice(0,10),
+      upcomingFairs:upcomingFairs().slice(0,6).map(f=>({nm:f.nm,disp:f.disp,loc:f.loc,area:f.area,status:statusText(f.st)})),
+      areas:areasByGrowth().map(a=>({nm:a.nm[LANG],stat:a.stat,growth:a.g,emerging:!!a.est})),
+      totalFairs:ALL_FAIRS.length};
+    try{
+      const r=await fetch(API_BASE+"/api/briefing",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({context:ctx})});
+      if(r.ok){ const d=await r.json(); const txt=(d.text||"").trim();
+        if(txt){ briefText=txt; briefTag=t().tv.ai; } else { briefText=localBrief(); briefTag=t().tv.local; } }
+      else { briefText=localBrief(); briefTag=t().tv.local; }
+    }catch(e){ briefText=localBrief(); briefTag=t().tv.local; }
+    if(sceneIdx===0)renderScene(0);
+  }
+  function startBriefTimer(){ stopBriefTimer(); briefTimer=setInterval(fetchBrief,BRIEF_REFRESH_MS); }
+  function stopBriefTimer(){ if(briefTimer)clearInterval(briefTimer); briefTimer=null; }
+
+  async function acquireWake(){ try{ if("wakeLock" in navigator){ wakeLock=await navigator.wakeLock.request("screen"); } }catch(e){} }
+  function releaseWake(){ try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){} }
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"&&document.body.classList.contains("tv-active"))acquireWake(); });
+
+  function pokeCursor(){ if(!document.body.classList.contains("tv-active"))return;
+    document.body.classList.add("tv-cursor"); clearTimeout(cursorTimer);
+    cursorTimer=setTimeout(()=>document.body.classList.remove("tv-cursor"),3000); }
+
+  function applyTvLabels(){
+    const n=document.getElementById("tv-name"); if(n)n.textContent=t().title;
+    const x=document.getElementById("tv-exit-lbl"); if(x)x.textContent=t().tv.exit;
+  }
+
+  function enter(){
+    build(); applyTvLabels();
+    document.body.classList.add("tv-active");
+    try{ const u=new URL(location.href); u.searchParams.set("tv","1"); history.replaceState(null,"",u); }catch(e){}
+    buildTicker(); sceneIdx=0; renderDots(); renderScene(0);
+    startRotation(); startTvClock(); acquireWake();
+    fetchBrief(); startBriefTimer();
+    window.addEventListener("mousemove",pokeCursor); pokeCursor();
+  }
+  function exit(){
+    document.body.classList.remove("tv-active","tv-cursor");
+    stopRotation(); stopBriefTimer(); stopTvClock(); releaseWake();
+    window.removeEventListener("mousemove",pokeCursor);
+    try{ const u=new URL(location.href); u.searchParams.delete("tv"); history.replaceState(null,"",u); }catch(e){}
+  }
+
+  // troca de idioma com o painel aberto
+  window.__tvRefresh=function(){ if(!document.body.classList.contains("tv-active"))return;
+    applyTvLabels(); buildTicker(); renderDots(); renderScene(sceneIdx); fetchBrief(); };
+
+  const enterBtn=document.getElementById("tv-enter");
+  if(enterBtn)enterBtn.addEventListener("click",enter);
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&document.body.classList.contains("tv-active"))exit(); });
+  const qp=new URLSearchParams(location.search);
+  if(qp.has("tv")||location.hash==="#tv"||location.hash==="#painel"){ enter(); }
+})();
 
 /* ============================================================
    BOOT

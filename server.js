@@ -195,16 +195,29 @@ function aiProvider() {
 function buildPrompts(q, ctx) {
   const langName = { pt: "português", en: "English", es: "español" }[ctx.lang] || "português";
   const system =
-    "Você é o assistente do Observatório de Tecnologia Global. " +
-    "Responda em " + langName + ", em no máximo 3 frases, de forma objetiva e útil. " +
-    "Use SOMENTE os dados de contexto fornecidos (feiras e áreas). " +
-    "Não invente datas, números ou eventos que não estejam no contexto. " +
-    "Se o contexto estiver vazio, diga que não há resultados para esses termos e sugira refinar a busca.";
-  const user = "Pergunta do usuário:\n" + q + "\n\nContexto (JSON):\n" + JSON.stringify(ctx).slice(0, 6000);
+    "Você é o consultor do Observatório de Tecnologia Global, especialista em feiras, mercados e áreas de tecnologia. " +
+    "Responda em " + langName + " de forma direta, prática e útil, em 2 a 5 frases curtas. " +
+    "Use os dados de contexto (feiras com datas/locais e áreas com ritmo de crescimento) para, quando fizer sentido: " +
+    "(1) recomendar as feiras ou áreas mais relevantes para a pergunta e explicar rapidamente por quê; " +
+    "(2) destacar o que é mais próximo no tempo, onde acontece e o que está crescendo mais rápido; " +
+    "(3) terminar com um próximo passo concreto (ex.: qual feira priorizar, qual área acompanhar, como refinar a busca). " +
+    "Você pode interpretar a intenção do usuário e dar orientação geral de mercado, " +
+    "mas NUNCA invente datas, números, locais ou eventos específicos que não estejam no contexto — sobre esses, use apenas o que foi fornecido. " +
+    "Se não houver feiras nem áreas no contexto, dê uma orientação geral curta e sugira refinar a busca por área, continente ou período.";
+  const user = "Pergunta do usuário:\n" + q + "\n\nContexto (JSON):\n" + JSON.stringify(ctx).slice(0, 8000);
   return { system, user };
 }
-async function askGemini(q, ctx) {
-  const { system, user } = buildPrompts(q, ctx);
+function buildBriefingPrompts(ctx) {
+  const langName = { pt: "português", en: "English", es: "español" }[ctx.lang] || "português";
+  const system =
+    "Você é o editor do Observatório de Tecnologia Global, escrevendo o briefing que roda num painel exibido numa TV de parede. " +
+    "Escreva em " + langName + " um texto curtíssimo de 2 a 3 frases (no total até ~45 palavras), com tom de manchete executiva, direto, sem saudação e sem se dirigir a 'você'. " +
+    "Com base nos dados de contexto, destaque: a próxima feira mais relevante (nome, quando e onde), a área de tecnologia em maior alta e um insight prático de mercado. " +
+    "NUNCA invente datas, números, locais ou eventos fora do contexto. Não use markdown, listas, títulos nem emojis — apenas texto corrido.";
+  const user = "Dados (JSON):\n" + JSON.stringify(ctx).slice(0, 4000) + "\n\nEscreva o briefing agora.";
+  return { system, user };
+}
+async function callGemini(system, user, maxTokens) {
   const url = "https://generativelanguage.googleapis.com/v1beta/models/" +
     encodeURIComponent(GEMINI_MODEL) + ":generateContent?key=" + encodeURIComponent(process.env.GEMINI_API_KEY);
   const ctrl = new AbortController();
@@ -215,7 +228,7 @@ async function askGemini(q, ctx) {
     body: JSON.stringify({
       system_instruction: { parts: [{ text: system }] },
       contents: [{ role: "user", parts: [{ text: user }] }],
-      generationConfig: { maxOutputTokens: 400, temperature: 0.4 }
+      generationConfig: { maxOutputTokens: maxTokens || 700, temperature: 0.4 }
     })
   });
   clearTimeout(to);
@@ -224,19 +237,24 @@ async function askGemini(q, ctx) {
   const parts = (((data.candidates || [])[0] || {}).content || {}).parts || [];
   return parts.map(p => p.text || "").join("").trim();
 }
-async function askAnthropic(q, ctx) {
-  const { system, user } = buildPrompts(q, ctx);
+async function callAnthropic(system, user, maxTokens) {
   const ctrl = new AbortController();
   const to = setTimeout(() => ctrl.abort(), 20000);
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST", signal: ctrl.signal,
     headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: ANTHROPIC_MODEL, max_tokens: 400, system, messages: [{ role: "user", content: user }] })
+    body: JSON.stringify({ model: ANTHROPIC_MODEL, max_tokens: maxTokens || 700, system, messages: [{ role: "user", content: user }] })
   });
   clearTimeout(to);
   if (!r.ok) { const t = await r.text().catch(() => ""); throw new Error("anthropic " + r.status + " " + t.slice(0, 200)); }
   const data = await r.json();
   return (data.content || []).map(b => (b.type === "text" ? b.text : "")).join("\n").trim();
+}
+async function aiComplete(system, user, maxTokens) {
+  const provider = aiProvider();
+  if (provider === "gemini") return callGemini(system, user, maxTokens);
+  if (provider === "anthropic") return callAnthropic(system, user, maxTokens);
+  throw new Error("no provider");
 }
 app.post("/api/ask", async (req, res) => {
   const provider = aiProvider();
@@ -246,9 +264,34 @@ app.post("/api/ask", async (req, res) => {
   if (!q) return res.status(400).json({ error: "Pergunta vazia." });
   const ctx = b.context || {};
   try {
-    const answer = provider === "gemini" ? await askGemini(q, ctx) : await askAnthropic(q, ctx);
+    const { system, user } = buildPrompts(q, ctx);
+    const answer = await aiComplete(system, user, 700);
     res.json({ answer, provider });
   } catch (e) {
+    res.status(502).json({ error: "IA indisponível no momento." });
+  }
+});
+
+/* Briefing proativo para o modo painel (TV). Cache em memória por idioma. */
+const BRIEFING_TTL_MS = 20 * 60 * 1000; // 20 min
+const briefingCache = new Map(); // lang -> { text, provider, ts }
+app.post("/api/briefing", async (req, res) => {
+  const provider = aiProvider();
+  if (!provider) return res.status(503).json({ error: "IA não configurada." });
+  const ctx = (req.body && req.body.context) || {};
+  const lang = ["pt", "en", "es"].includes(ctx.lang) ? ctx.lang : "pt";
+  const now = Date.now();
+  const hit = briefingCache.get(lang);
+  if (hit && (now - hit.ts) < BRIEFING_TTL_MS) {
+    return res.json({ text: hit.text, provider: hit.provider, cached: true });
+  }
+  try {
+    const { system, user } = buildBriefingPrompts(ctx);
+    const text = await aiComplete(system, user, 300);
+    if (text) briefingCache.set(lang, { text, provider, ts: now });
+    res.json({ text, provider, cached: false });
+  } catch (e) {
+    if (hit) return res.json({ text: hit.text, provider: hit.provider, cached: true, stale: true });
     res.status(502).json({ error: "IA indisponível no momento." });
   }
 });
