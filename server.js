@@ -11,6 +11,8 @@
    - POST /api/ask                 resumo por IA usando sua ANTHROPIC_API_KEY
    - GET  /api/health              status
 
+   (Removido nesta versão: notificações Web Push e exportação de agenda .ics)
+
    Variáveis de ambiente (defina no painel do Render):
    - ANTHROPIC_API_KEY   (obrigatória só para /api/ask)
    - ANTHROPIC_MODEL     (opcional; padrão claude-haiku-4-5-20251001)
@@ -254,92 +256,9 @@ app.post("/api/ask", async (req, res) => {
 });
 
 /* ============================================================
-   PUSH — notificações Web Push (VAPID)
-   Variáveis de ambiente no Render:
-     - VAPID_PUBLIC   chave pública (gerada para você)
-     - VAPID_PRIVATE  chave privada (NUNCA no GitHub — só aqui)
-     - PUSH_CONTACT   ex.: mailto:seu-email@exemplo.com
-     - PUSH_TOKEN     senha secreta para disparar avisos (invente uma)
-   Disparo:
-     - GET /api/push/run?token=SEU_TOKEN          → avisa feiras que começam em 7 ou 1 dia
-     - GET /api/push/run?token=SEU_TOKEN&test=1   → envia uma notificação de teste agora
-   Um "despertador" externo (cron-job.org) deve chamar /api/push/run 1x/dia,
-   porque no plano free o Render dorme e não dispara sozinho.
-   ============================================================ */
-let webpush = null;
-try { webpush = require("web-push"); } catch (e) {}
-const VAPID_PUBLIC = process.env.VAPID_PUBLIC || "";
-const VAPID_PRIVATE = process.env.VAPID_PRIVATE || "";
-const PUSH_TOKEN = process.env.PUSH_TOKEN || "";
-const PUSH_CONTACT = process.env.PUSH_CONTACT || "mailto:contato@exemplo.com";
-const pushReady = !!(webpush && VAPID_PUBLIC && VAPID_PRIVATE);
-if (pushReady) { try { webpush.setVapidDetails(PUSH_CONTACT, VAPID_PUBLIC, VAPID_PRIVATE); } catch (e) { console.log("VAPID inválido:", e.message); } }
-
-const SUB_FILE = path.join(DATA_DIR, "subs.json");
-function readSubs() { try { return JSON.parse(fs.readFileSync(SUB_FILE, "utf8")) || []; } catch (e) { return []; } }
-function writeSubs(a) { try { fs.writeFileSync(SUB_FILE, JSON.stringify(a)); return true; } catch (e) { return false; } }
-
-/* Datas das feiras para os avisos. MANTENHA EM DIA junto com o index.html. */
-const PUSH_FAIRS = [
-  { nm: "CES", s: "2026-01-06", url: "https://www.ces.tech" },
-  { nm: "MWC Barcelona", s: "2026-03-02", url: "https://www.mwcbarcelona.com" },
-  { nm: "South Summit Brazil", s: "2026-03-25", url: "https://www.southsummit.io/brazil" },
-  { nm: "Hannover Messe", s: "2026-04-20", url: "https://www.hannovermesse.de/en" },
-  { nm: "Gramado Summit", s: "2026-05-06", url: "https://gramadosummit.com" },
-  { nm: "COMPUTEX", s: "2026-06-02", url: "https://www.computextaipei.com.tw/en" },
-  { nm: "Web Summit Rio", s: "2026-06-08", url: "https://rio.websummit.com" },
-  { nm: "Febraban Tech", s: "2026-08-24", url: "https://febrabantech.febraban.org.br" },
-  { nm: "IFA Berlin", s: "2026-09-04", url: "https://www.ifa-berlin.com" },
-  { nm: "Futurecom", s: "2026-10-06", url: "https://www.futurecom.com.br" },
-  { nm: "SPS Nuremberg", s: "2026-11-24", url: "https://sps.mesago.com/nuernberg/en.html" },
-  { nm: "GITEX Global", s: "2026-12-07", url: "https://www.gitex.com" }
-];
-
-app.get("/api/push/vapid", (req, res) => res.json({ key: pushReady ? VAPID_PUBLIC : "" }));
-
-app.post("/api/push/subscribe", (req, res) => {
-  const sub = req.body;
-  if (!sub || !sub.endpoint) return res.status(400).json({ error: "Inscrição inválida." });
-  const subs = readSubs();
-  if (!subs.some(s => s.endpoint === sub.endpoint)) { subs.push(sub); writeSubs(subs); }
-  res.json({ ok: true });
-});
-
-async function sendToAll(payload) {
-  if (!pushReady) return { sent: 0, removed: 0 };
-  const subs = readSubs();
-  const keep = [];
-  let sent = 0;
-  for (const s of subs) {
-    try { await webpush.sendNotification(s, JSON.stringify(payload)); sent++; keep.push(s); }
-    catch (e) { if (!(e && (e.statusCode === 404 || e.statusCode === 410))) keep.push(s); } // remove só inscrições expiradas
-  }
-  writeSubs(keep);
-  return { sent, removed: subs.length - keep.length };
-}
-
-app.get("/api/push/run", async (req, res) => {
-  if (!pushReady) return res.status(503).json({ error: "Push não configurado (faltam VAPID_PUBLIC/VAPID_PRIVATE)." });
-  if (PUSH_TOKEN && req.query.token !== PUSH_TOKEN) return res.status(401).json({ error: "Token inválido." });
-  if (req.query.test) { const r = await sendToAll({ title: "Observatório de Tecnologia", body: "Teste de notificação ✓", url: "/" }); return res.json({ test: true, ...r }); }
-  const milestones = [7, 1];
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const fired = []; let sent = 0, removed = 0;
-  for (const f of PUSH_FAIRS) {
-    const start = new Date(f.s + "T00:00:00");
-    const days = Math.round((start - today) / 86400000);
-    if (milestones.includes(days)) {
-      const r = await sendToAll({ title: "📅 " + f.nm, body: days === 1 ? "Começa amanhã!" : ("Começa em " + days + " dias"), url: f.url || "/" });
-      sent += r.sent; removed += r.removed; fired.push({ nm: f.nm, days });
-    }
-  }
-  res.json({ ok: true, fired, sent, removed });
-});
-
-/* ============================================================
    ESTÁTICOS + boot
    ============================================================ */
-app.get("/api/health", (req, res) => res.json({ ok: true, ai: !!aiProvider(), provider: aiProvider(), push: pushReady, subs: readSubs().length, suppliers: readSuppliers().length }));
+app.get("/api/health", (req, res) => res.json({ ok: true, ai: !!aiProvider(), provider: aiProvider(), suppliers: readSuppliers().length }));
 
 app.use(express.static(__dirname, { extensions: ["html"] }));
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "index.html")));

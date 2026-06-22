@@ -153,9 +153,6 @@
   .pill.up{background:rgba(255,255,255,0.10);color:#d2d2d6}
   .pill.now{background:rgba(76,141,255,0.22);color:#9cc0ff}
   .pill.past{background:var(--panel-3);color:var(--faint)}
-  .fair .ics{font-family:var(--mono);font-size:15px;color:var(--faint);align-self:center;background:transparent;border:0;cursor:pointer;padding:0.2rem 0.3rem;border-radius:6px;transition:color .15s,background .15s;flex:none}
-  .fair .ics:hover{color:var(--phosphor);background:var(--panel-3)}
-  .fair .ics:focus-visible{outline:2px solid var(--hot);outline-offset:1px}
 
   /* feed status + auto-refresh (cotação) */
   .feed-status{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);margin-bottom:0.9rem}
@@ -290,10 +287,6 @@
     <div class="sec-head">
       <h2 data-i18n="fairsTitle">Feiras de tecnologia</h2>
       <span class="count" id="fair-count"></span>
-      <div class="sec-tools">
-        <button class="btn" type="button" id="fair-export-all" data-i18n="exportAll">Exportar agenda (.ics)</button>
-        <button class="btn" type="button" id="push-btn" hidden><span aria-hidden="true">🔔</span> <span id="push-label">Ativar avisos</span></button>
-      </div>
     </div>
     <p class="sec-intro" data-i18n="fairsIntro">Calendário de 2026 por continente.</p>
     <div class="fair-legend">
@@ -347,7 +340,6 @@
       <div class="sup-row sup-filters">
         <select id="sup-fcat" class="sup-sel" aria-label="Categoria"></select>
         <select id="sup-fcountry" class="sup-sel" aria-label="País"></select>
-        <button class="btn primary" type="button" id="sup-find"><span aria-hidden="true">🔍</span> <span data-i18n="catSearch">Buscar</span></button>
         <span class="count" id="sup-cnt"></span>
       </div>
       <div class="sup-list" id="sup-list"></div>
@@ -485,17 +477,16 @@ const I18N={
     askGo:"Perguntar", askThinking:"Consultando…", askLocalTag:"Resposta local", askAiTag:"Resumo por IA",
     askNoHits:"Nada encontrado para esses termos. Tente outra área, continente ou mês.",
     askChips:["feiras de IA no Brasil","automação na Europa","o que acontece agora","área que mais cresce"],
-    fairsTitle:"Feiras de tecnologia", fairsIntro:"Calendário de 2026 por continente. Toque no ícone de agenda para exportar (.ics).",
-    exportAll:"Exportar agenda (.ics)", pushEnable:"Ativar avisos", pushOn:"Avisos ativados ✓", pushDenied:"Permissão negada", pushError:"Não foi possível ativar", legUp:"vão ocorrer", legNow:"acontecendo agora", legPast:"encerradas",
+    fairsTitle:"Feiras de tecnologia", fairsIntro:"Calendário de 2026 por continente.",
+    legUp:"vão ocorrer", legNow:"acontecendo agora", legPast:"encerradas",
     fairCount:(n,c)=>n+" eventos · "+c+" continentes", evt1:"evento", evtN:"eventos",
     stUp:d=>d===0?"começa hoje":("em "+d+(d===1?" dia":" dias")), stNow:"acontecendo agora", stPast:"edição encerrada",
-    addCal:"Adicionar à agenda",
     areasTitle:"Áreas da tecnologia", areasIntro:"Ritmo de crescimento por área. Clique para abrir notícias recentes.",
     areaCount:"7 áreas · ritmo de crescimento", perYr:"/ano", est:" (est.)",
     legHot:"Alta tração", legGrow:"Em expansão", legEmerg:"Emergente", newsHead:"Notícias recentes", newsMore:"ver mais no Google News",
     newsLoading:"Carregando notícias…", newsNone:"Sem manchetes agora.",
     supTitle:"Fornecedores de tecnologia", supPlaceholder:"O que você procura? ex.: paletização autônoma",
-    supWeb:"Buscar na web", catSearch:"Buscar", supCatalog:"Catálogo interno", supCount:n=>n+(n===1?" fornecedor":" fornecedores"),
+    supWeb:"Buscar na web", supCatalog:"Catálogo interno", supCount:n=>n+(n===1?" fornecedor":" fornecedores"),
     supNoneFilter:"Nenhum fornecedor com esses filtros.", allCats:"Todas as categorias", allCountries:"Todos os países",
     fName:"Nome do fornecedor *", fCountry:"País *", fCat:"Categoria…", fSite:"Site (https://...) *", fDesc:"Descrição curta", fContact:"Contato (telefone/e-mail) — opcional",
     fSave:"Salvar neste navegador", fShare:"Publicar para todos", fCancel:"Cancelar",
@@ -516,17 +507,16 @@ const I18N={
     askGo:"Ask", askThinking:"Looking…", askLocalTag:"Local answer", askAiTag:"AI summary",
     askNoHits:"Nothing matched those terms. Try another area, continent or month.",
     askChips:["AI fairs in Brazil","automation in Europe","what's happening now","fastest-growing area"],
-    fairsTitle:"Tech fairs", fairsIntro:"2026 calendar by continent. Tap the calendar icon to export (.ics).",
-    exportAll:"Export calendar (.ics)", pushEnable:"Enable alerts", pushOn:"Alerts on ✓", pushDenied:"Permission denied", pushError:"Could not enable", legUp:"upcoming", legNow:"happening now", legPast:"finished",
+    fairsTitle:"Tech fairs", fairsIntro:"2026 calendar by continent.",
+    legUp:"upcoming", legNow:"happening now", legPast:"finished",
     fairCount:(n,c)=>n+" events · "+c+" continents", evt1:"event", evtN:"events",
     stUp:d=>d===0?"starts today":("in "+d+(d===1?" day":" days")), stNow:"happening now", stPast:"edition finished",
-    addCal:"Add to calendar",
     areasTitle:"Technology areas", areasIntro:"Growth pace by area. Click to open recent news.",
     areaCount:"7 areas · growth pace", perYr:"/yr", est:" (est.)",
     legHot:"High traction", legGrow:"Expanding", legEmerg:"Emerging", newsHead:"Recent news", newsMore:"more on Google News",
     newsLoading:"Loading news…", newsNone:"No headlines right now.",
     supTitle:"Technology suppliers", supPlaceholder:"What are you looking for? e.g. autonomous palletizing",
-    supWeb:"Search the web", catSearch:"Search", supCatalog:"Internal catalog", supCount:n=>n+(n===1?" supplier":" suppliers"),
+    supWeb:"Search the web", supCatalog:"Internal catalog", supCount:n=>n+(n===1?" supplier":" suppliers"),
     supNoneFilter:"No suppliers match these filters.", allCats:"All categories", allCountries:"All countries",
     fName:"Supplier name *", fCountry:"Country *", fCat:"Category…", fSite:"Website (https://...) *", fDesc:"Short description", fContact:"Contact (phone/email) — optional",
     fSave:"Save in this browser", fShare:"Publish for everyone", fCancel:"Cancel",
@@ -547,17 +537,16 @@ const I18N={
     askGo:"Preguntar", askThinking:"Consultando…", askLocalTag:"Respuesta local", askAiTag:"Resumen por IA",
     askNoHits:"Nada coincide con esos términos. Prueba otra área, continente o mes.",
     askChips:["ferias de IA en Brasil","automatización en Europa","qué pasa ahora","área que más crece"],
-    fairsTitle:"Ferias de tecnología", fairsIntro:"Calendario 2026 por continente. Toca el icono de agenda para exportar (.ics).",
-    exportAll:"Exportar agenda (.ics)", pushEnable:"Activar avisos", pushOn:"Avisos activados ✓", pushDenied:"Permiso denegado", pushError:"No se pudo activar", legUp:"próximas", legNow:"en curso", legPast:"finalizadas",
+    fairsTitle:"Ferias de tecnología", fairsIntro:"Calendario 2026 por continente.",
+    legUp:"próximas", legNow:"en curso", legPast:"finalizadas",
     fairCount:(n,c)=>n+" eventos · "+c+" continentes", evt1:"evento", evtN:"eventos",
     stUp:d=>d===0?"empieza hoy":("en "+d+(d===1?" día":" días")), stNow:"en curso", stPast:"edición finalizada",
-    addCal:"Añadir a la agenda",
     areasTitle:"Áreas de tecnología", areasIntro:"Ritmo de crecimiento por área. Haz clic para abrir noticias recientes.",
     areaCount:"7 áreas · ritmo de crecimiento", perYr:"/año", est:" (est.)",
     legHot:"Alta tracción", legGrow:"En expansión", legEmerg:"Emergente", newsHead:"Noticias recientes", newsMore:"más en Google News",
     newsLoading:"Cargando noticias…", newsNone:"Sin titulares por ahora.",
     supTitle:"Proveedores de tecnología", supPlaceholder:"¿Qué buscas? ej.: paletizado autónomo",
-    supWeb:"Buscar en la web", catSearch:"Buscar", supCatalog:"Catálogo interno", supCount:n=>n+(n===1?" proveedor":" proveedores"),
+    supWeb:"Buscar en la web", supCatalog:"Catálogo interno", supCount:n=>n+(n===1?" proveedor":" proveedores"),
     supNoneFilter:"Ningún proveedor con esos filtros.", allCats:"Todas las categorías", allCountries:"Todos los países",
     fName:"Nombre del proveedor *", fCountry:"País *", fCat:"Categoría…", fSite:"Sitio (https://...) *", fDesc:"Descripción corta", fContact:"Contacto (teléfono/correo) — opcional",
     fSave:"Guardar en este navegador", fShare:"Publicar para todos", fCancel:"Cancelar",
@@ -672,7 +661,7 @@ async function loadAreaNews(a,box){
 }
 
 /* ============================================================
-   FEIRAS + exportação .ics
+   FEIRAS
    ============================================================ */
 function fairStatus(s,e){
   const now=new Date();now.setHours(0,0,0,0);
@@ -707,37 +696,6 @@ const CONT_NAMES={
 };
 const CONT_ORDER=["América do Sul","América do Norte","Europa","Ásia"];
 
-/* gera conteúdo .ics para uma ou mais feiras */
-function icsDate(s){return s.replace(/-/g,"");}
-function icsDateEnd(e){ // DTEND é exclusivo: dia seguinte ao fim
-  const d=new Date(e+"T00:00:00");d.setDate(d.getDate()+1);
-  return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
-}
-function icsEscape(s){return String(s).replace(/[\\;,]/g,m=>"\\"+m).replace(/\n/g,"\\n");}
-function buildIcs(fairs){
-  const now=new Date().toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
-  let out="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Observatorio Tech Global//PT-BR//\r\nCALSCALE:GREGORIAN\r\n";
-  fairs.forEach((f,i)=>{
-    out+="BEGIN:VEVENT\r\n";
-    out+="UID:otg-"+icsDate(f.s)+"-"+i+"@observatorio.tech\r\n";
-    out+="DTSTAMP:"+now+"\r\n";
-    out+="DTSTART;VALUE=DATE:"+icsDate(f.s)+"\r\n";
-    out+="DTEND;VALUE=DATE:"+icsDateEnd(f.e||f.s)+"\r\n";
-    out+="SUMMARY:"+icsEscape(f.nm)+"\r\n";
-    out+="LOCATION:"+icsEscape(f.loc)+"\r\n";
-    out+="DESCRIPTION:"+icsEscape(f.area+(f.url?(" — "+f.url):""))+"\r\n";
-    if(f.url) out+="URL:"+icsEscape(f.url)+"\r\n";
-    out+="END:VEVENT\r\n";
-  });
-  out+="END:VCALENDAR\r\n";
-  return out;
-}
-function downloadIcs(fairs,filename){
-  const blob=new Blob([buildIcs(fairs)],{type:"text/calendar;charset=utf-8"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();
-  document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),1500);
-}
 
 function renderFairs(){
   const fairsEl=document.getElementById("fairs");
@@ -767,9 +725,7 @@ function renderFairs(){
           '<div class="body"><div class="nm">'+esc(f.nm)+'</div>'+
             '<div class="meta">'+esc(f.loc)+' · <span class="area">'+esc(f.area)+'</span></div>'+
             '<span class="pill '+f.st.k+'">'+esc(statusText(f.st))+'</span></div>'+
-        '</a>'+
-        '<button class="ics" type="button" title="'+esc(t().addCal)+'" aria-label="'+esc(t().addCal+": "+f.nm)+'">📅</button>';
-      row.querySelector(".ics").addEventListener("click",ev=>{ev.preventDefault();downloadIcs([f],"feira-"+noAccent(f.nm).replace(/[^a-z0-9]+/g,"-")+".ics");});
+        '</a>';
       body.appendChild(row);
     });
     col.appendChild(body);
@@ -777,10 +733,6 @@ function renderFairs(){
   });
   document.getElementById("fair-count").textContent=t().fairCount(ALL_FAIRS.length,contCount);
 }
-document.getElementById("fair-export-all").addEventListener("click",()=>{
-  const upcoming=ALL_FAIRS.filter(f=>fairStatus(f.s,f.e).k!=="past");
-  downloadIcs(upcoming.length?upcoming:ALL_FAIRS,"feiras-tecnologia-2026.ics");
-});
 
 /* ============================================================
    BUSCA EM LINGUAGEM NATURAL (local + IA opcional)
@@ -1034,7 +986,6 @@ function updateConverter(){
   rebuildFilters();
   fcat.addEventListener("change",render);
   fcountry.addEventListener("change",render);
-  document.getElementById("sup-find").addEventListener("click",render);
 
   function showCatalog(){catalog.hidden=false;render();}
   document.getElementById("sup-cat").addEventListener("click",function(){if(catalog.hidden){showCatalog();}else{catalog.hidden=true;}});
@@ -1142,51 +1093,11 @@ function applyI18n(){
   fillConvSelects();updateConverter();
   if(window.__supRefresh)window.__supRefresh();
   document.getElementById("fx-pause").textContent=fxPaused?t().resume:t().pause;
-  if(window.updatePushLabel)window.updatePushLabel();
   tick();
 }
 document.querySelectorAll(".lang-switch button").forEach(b=>{
   b.addEventListener("click",()=>{LANG=b.dataset.lang;try{localStorage.setItem("otg_lang",LANG);}catch(e){}applyI18n();});
 });
-
-/* ============================================================
-   NOTIFICAÇÕES (Web Push) — botão "Ativar avisos"
-   ============================================================ */
-const pushBtn=document.getElementById("push-btn");
-const pushLabelEl=document.getElementById("push-label");
-let VAPID_KEY="", pushSubscribed=false;
-function urlB64ToUint8(b64){const pad="=".repeat((4-b64.length%4)%4);const s=(b64+pad).replace(/-/g,"+").replace(/_/g,"/");const raw=atob(s);const arr=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return arr;}
-window.updatePushLabel=function(){ if(pushLabelEl) pushLabelEl.textContent = pushSubscribed ? t().pushOn : t().pushEnable; if(pushBtn) pushBtn.disabled = pushSubscribed; };
-async function initPush(){
-  if(!pushBtn) return;
-  if(!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
-  try{
-    const r=await fetch(API_BASE+"/api/push/vapid",{cache:"no-store"});
-    if(!r.ok) return;
-    const d=await r.json();
-    if(!d.key) return;            // push não configurado no backend → botão fica escondido
-    VAPID_KEY=d.key;
-    const reg=await navigator.serviceWorker.ready;
-    const sub=await reg.pushManager.getSubscription();
-    pushSubscribed=!!sub;
-    window.updatePushLabel();
-    pushBtn.hidden=false;          // só aparece quando o push está disponível
-  }catch(e){}
-}
-if(pushBtn){
-  pushBtn.addEventListener("click",async()=>{
-    try{
-      const perm=await Notification.requestPermission();
-      if(perm!=="granted"){ pushLabelEl.textContent=t().pushDenied; return; }
-      const reg=await navigator.serviceWorker.ready;
-      let sub=await reg.pushManager.getSubscription();
-      if(!sub){ sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8(VAPID_KEY)}); }
-      const rr=await fetch(API_BASE+"/api/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(sub)});
-      if(!rr.ok) throw 0;
-      pushSubscribed=true; window.updatePushLabel();
-    }catch(e){ pushLabelEl.textContent=t().pushError; }
-  });
-}
 
 /* ============================================================
    BOOT
@@ -1196,7 +1107,6 @@ applyI18n();
 showFxSkeleton();
 fetchFx();
 startFxLoop();
-if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").then(function(){initPush();}).catch(function(){});});}
 </script>
 
 </body>
