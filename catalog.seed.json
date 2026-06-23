@@ -1,0 +1,384 @@
+{
+  "fairs": [
+    {
+      "nm": "CES",
+      "disp": "6–9 jan",
+      "s": "2026-01-06",
+      "e": "2026-01-09",
+      "loc": "Las Vegas, EUA",
+      "area": "Eletrônicos de consumo & IA",
+      "url": "https://www.ces.tech"
+    },
+    {
+      "nm": "MWC Barcelona",
+      "disp": "2–5 mar",
+      "s": "2026-03-02",
+      "e": "2026-03-05",
+      "loc": "Barcelona, Espanha",
+      "area": "Móvel, 5G/6G, IA",
+      "url": "https://www.mwcbarcelona.com"
+    },
+    {
+      "nm": "GDC",
+      "disp": "9–13 mar",
+      "s": "2026-03-09",
+      "e": "2026-03-13",
+      "loc": "San Francisco, EUA",
+      "area": "Games & desenvolvimento",
+      "url": "https://gdconf.com"
+    },
+    {
+      "nm": "Canton Fair (1ª fase)",
+      "disp": "a partir de 15 abr",
+      "s": "2026-04-15",
+      "e": "2026-04-19",
+      "loc": "Guangzhou, China",
+      "area": "Multissetorial & eletrônica",
+      "url": "https://www.cantonfair.org.cn/en-US"
+    },
+    {
+      "nm": "Hannover Messe",
+      "disp": "20–24 abr",
+      "s": "2026-04-20",
+      "e": "2026-04-24",
+      "loc": "Hannover, Alemanha",
+      "area": "Automação industrial",
+      "url": "https://www.hannovermesse.de/en"
+    },
+    {
+      "nm": "Google I/O",
+      "disp": "19–20 mai",
+      "s": "2026-05-19",
+      "e": "2026-05-20",
+      "loc": "Mountain View, EUA",
+      "area": "IA & desenvolvimento",
+      "url": "https://io.google"
+    },
+    {
+      "nm": "COMPUTEX",
+      "disp": "2–5 jun",
+      "s": "2026-06-02",
+      "e": "2026-06-05",
+      "loc": "Taipei, Taiwan",
+      "area": "Hardware, chips, IA",
+      "url": "https://www.computextaipei.com.tw/en"
+    },
+    {
+      "nm": "IFA Berlin",
+      "disp": "4–8 set",
+      "s": "2026-09-04",
+      "e": "2026-09-08",
+      "loc": "Berlim, Alemanha",
+      "area": "Eletrônicos de consumo",
+      "url": "https://www.ifa-berlin.com"
+    },
+    {
+      "nm": "TechCrunch Disrupt",
+      "disp": "set",
+      "s": "2026-09-15",
+      "e": "2026-09-17",
+      "loc": "San Francisco, EUA",
+      "area": "Startups & venture capital",
+      "url": "https://techcrunch.com/events/"
+    },
+    {
+      "nm": "Canton Fair (2ª fase)",
+      "disp": "a partir de 15 out",
+      "s": "2026-10-15",
+      "e": "2026-10-19",
+      "loc": "Guangzhou, China",
+      "area": "Multissetorial & eletrônica",
+      "url": "https://www.cantonfair.org.cn/en-US"
+    },
+    {
+      "nm": "SPS – Smart Production Solutions",
+      "disp": "24–26 nov",
+      "s": "2026-11-24",
+      "e": "2026-11-26",
+      "loc": "Nuremberg, Alemanha",
+      "area": "Automação inteligente",
+      "url": "https://sps.mesago.com/nuernberg/en.html"
+    },
+    {
+      "nm": "Slush",
+      "disp": "fim de nov",
+      "s": "2026-11-30",
+      "e": "2026-12-01",
+      "loc": "Helsinque, Finlândia",
+      "area": "Startups & deep tech",
+      "url": "https://slush.org"
+    },
+    {
+      "nm": "GITEX Global",
+      "disp": "7–11 dez",
+      "s": "2026-12-07",
+      "e": "2026-12-11",
+      "loc": "Dubai, EAU",
+      "area": "IA, cibersegurança, startups",
+      "url": "https://www.gitex.com"
+    },
+    {
+      "nm": "South Summit Brazil",
+      "disp": "25–27 mar",
+      "s": "2026-03-25",
+      "e": "2026-03-27",
+      "loc": "Porto Alegre, RS",
+      "area": "Startups & venture capital",
+      "url": "https://www.southsummit.io/brazil"
+    },
+    {
+      "nm": "Smart City Expo Curitiba",
+      "disp": "25–27 mar",
+      "s": "2026-03-25",
+      "e": "2026-03-27",
+      "loc": "Curitiba, PR",
+      "area": "Cidades inteligentes",
+      "url": "https://smartcityexpocuritiba.com"
+    },
+    {
+      "nm": "Digital Tech Show / AI Innovation Show",
+      "disp": "5–6 mai",
+      "s": "2026-05-05",
+      "e": "2026-05-06",
+      "loc": "São Paulo, SP",
+      "area": "IA & TI corporativa",
+      "url": "https://iimainfo.com.br/digital-tech-show/"
+    },
+    {
+      "nm": "FEIMEC",
+      "disp": "5–9 mai",
+      "s": "2026-05-05",
+      "e": "2026-05-09",
+      "loc": "São Paulo, SP",
+      "area": "Máquinas & automação (bienal · próx. 2028)",
+      "url": "https://www.feimec.com.br"
+    },
+    {
+      "nm": "Gramado Summit",
+      "disp": "6–8 mai",
+      "s": "2026-05-06",
+      "e": "2026-05-08",
+      "loc": "Gramado, RS",
+      "area": "Inovação & empreendedorismo",
+      "url": "https://gramadosummit.com"
+    },
+    {
+      "nm": "AI Festival (StartSe)",
+      "disp": "13–14 mai",
+      "s": "2026-05-13",
+      "e": "2026-05-14",
+      "loc": "São Paulo, SP",
+      "area": "IA para negócios",
+      "url": "https://pages.startse.com/ai-festival"
+    },
+    {
+      "nm": "Web Summit Rio",
+      "disp": "8–11 jun",
+      "s": "2026-06-08",
+      "e": "2026-06-11",
+      "loc": "Rio de Janeiro, RJ",
+      "area": "Tecnologia & IA (próx. ed. jun/2027)",
+      "url": "https://rio.websummit.com"
+    },
+    {
+      "nm": "Fispal Tecnologia",
+      "disp": "16–19 jun",
+      "s": "2026-06-16",
+      "e": "2026-06-19",
+      "loc": "São Paulo, SP",
+      "area": "Automação de alimentos & bebidas",
+      "url": "https://www.fispaltecnologia.com.br"
+    },
+    {
+      "nm": "Febraban Tech",
+      "disp": "24–26 ago",
+      "s": "2026-08-24",
+      "e": "2026-08-26",
+      "loc": "São Paulo, SP",
+      "area": "Tecnologia financeira",
+      "url": "https://febrabantech.febraban.org.br"
+    },
+    {
+      "nm": "Futurecom",
+      "disp": "6–8 out",
+      "s": "2026-10-06",
+      "e": "2026-10-08",
+      "loc": "São Paulo, SP",
+      "area": "Conectividade, IA, infra digital",
+      "url": "https://www.futurecom.com.br"
+    },
+    {
+      "nm": "Big Data & AI Brazil Experience",
+      "disp": "22 nov",
+      "s": "2026-11-22",
+      "e": "2026-11-22",
+      "loc": "São Paulo, SP",
+      "area": "Big data & IA"
+    },
+    {
+      "nm": "EXPOMAFE",
+      "disp": "4–8 mai 2027",
+      "s": "2027-05-04",
+      "e": "2027-05-08",
+      "loc": "São Paulo, SP",
+      "area": "Máquinas-ferramenta & automação",
+      "url": "https://www.expomafe.com.br"
+    },
+    {
+      "nm": "Asia Tech x Singapore (ATxSG)",
+      "disp": "20–22 mai",
+      "s": "2026-05-20",
+      "e": "2026-05-22",
+      "loc": "Singapura",
+      "area": "Telecom, IA & economia digital",
+      "url": "https://asiatechxsg.com"
+    },
+    {
+      "nm": "SEMICON Taiwan",
+      "disp": "2–4 set",
+      "s": "2026-09-02",
+      "e": "2026-09-04",
+      "loc": "Taipei, Taiwan",
+      "area": "Semicondutores & chips",
+      "url": "https://www.semicontaiwan.org"
+    },
+    {
+      "nm": "India Mobile Congress (IMC)",
+      "disp": "7–10 out",
+      "s": "2026-10-07",
+      "e": "2026-10-10",
+      "loc": "Nova Délhi, Índia",
+      "area": "5G/6G, IA & semicondutores",
+      "url": "https://www.indiamobilecongress.com"
+    },
+    {
+      "nm": "CEATEC",
+      "disp": "13–16 out",
+      "s": "2026-10-13",
+      "e": "2026-10-16",
+      "loc": "Chiba, Japão",
+      "area": "Eletrônicos, IoT & IA",
+      "url": "https://www.ceatec.com"
+    },
+    {
+      "nm": "VivaTech",
+      "disp": "17–20 jun",
+      "s": "2026-06-17",
+      "e": "2026-06-20",
+      "loc": "Paris, França",
+      "area": "Inovação, startups & IA",
+      "url": "https://vivatech.com"
+    },
+    {
+      "nm": "Gamescom",
+      "disp": "26–30 ago",
+      "s": "2026-08-26",
+      "e": "2026-08-30",
+      "loc": "Colônia, Alemanha",
+      "area": "Games & entretenimento digital",
+      "url": "https://www.gamescom.global"
+    },
+    {
+      "nm": "Web Summit",
+      "disp": "9–12 nov",
+      "s": "2026-11-09",
+      "e": "2026-11-12",
+      "loc": "Lisboa, Portugal",
+      "area": "Tecnologia, startups & IA",
+      "url": "https://websummit.com"
+    }
+  ],
+  "areas": [
+    {
+      "id": "ia",
+      "nm": {
+        "pt": "Inteligência artificial",
+        "en": "Artificial intelligence",
+        "es": "Inteligencia artificial"
+      },
+      "heat": "hot",
+      "stat": "US$ 169 bi",
+      "g": 31,
+      "est": false,
+      "gq": "inteligência artificial"
+    },
+    {
+      "id": "auto",
+      "nm": {
+        "pt": "Automação industrial",
+        "en": "Industrial automation",
+        "es": "Automatización industrial"
+      },
+      "heat": "hot",
+      "stat": "US$ 13,7 bi",
+      "g": 51,
+      "est": false,
+      "gq": "automação industrial indústria 4.0"
+    },
+    {
+      "id": "rob",
+      "nm": {
+        "pt": "Robótica & cobots",
+        "en": "Robotics & cobots",
+        "es": "Robótica y cobots"
+      },
+      "heat": "grow",
+      "stat": "4,28 mi",
+      "g": 7,
+      "est": false,
+      "gq": "robótica industrial cobots"
+    },
+    {
+      "id": "phys",
+      "nm": {
+        "pt": "Physical AI & humanoides",
+        "en": "Physical AI & humanoids",
+        "es": "IA física y humanoides"
+      },
+      "heat": "emerg",
+      "stat": "US$ 1,5 bi",
+      "g": 47,
+      "est": false,
+      "gq": "robôs humanoides"
+    },
+    {
+      "id": "chip",
+      "nm": {
+        "pt": "Semicondutores & chips de IA",
+        "en": "Semiconductors & AI chips",
+        "es": "Semiconductores y chips de IA"
+      },
+      "heat": "hot",
+      "stat": "Gargalo nº 1",
+      "g": 30,
+      "est": true,
+      "gq": "semicondutores chips IA Nvidia"
+    },
+    {
+      "id": "cloud",
+      "nm": {
+        "pt": "Nuvem & data centers",
+        "en": "Cloud & data centers",
+        "es": "Nube y centros de datos"
+      },
+      "heat": "hot",
+      "stat": "Boom de capex",
+      "g": 22,
+      "est": true,
+      "gq": "data center computação em nuvem"
+    },
+    {
+      "id": "cyber",
+      "nm": {
+        "pt": "Cibersegurança",
+        "en": "Cybersecurity",
+        "es": "Ciberseguridad"
+      },
+      "heat": "grow",
+      "stat": "US$ 6,3 bi",
+      "g": 25,
+      "est": true,
+      "gq": "cibersegurança ransomware ataque"
+    }
+  ]
+}
