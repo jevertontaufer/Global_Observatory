@@ -507,7 +507,7 @@ const PULSE = [
 ];
 
 /* ÁREAS — nome trilíngue, indicador, crescimento %/ano e consulta de notícias */
-const AREAS=[
+let AREAS=[
   {id:"ia",   nm:{pt:"Inteligência artificial",en:"Artificial intelligence",es:"Inteligencia artificial"}, heat:"hot",  stat:"US$ 169 bi", g:31, est:false, gq:"inteligência artificial"},
   {id:"auto", nm:{pt:"Automação industrial",en:"Industrial automation",es:"Automatización industrial"},     heat:"hot",  stat:"US$ 13,7 bi",g:51, est:false, gq:"automação industrial indústria 4.0"},
   {id:"rob",  nm:{pt:"Robótica & cobots",en:"Robotics & cobots",es:"Robótica y cobots"},                    heat:"grow", stat:"4,28 mi",    g:7,  est:false, gq:"robótica industrial cobots"},
@@ -547,7 +547,7 @@ const FAIRS_BR=[
   {nm:"Big Data & AI Brazil Experience",disp:"22 nov",s:"2026-11-22",e:"2026-11-22",loc:"São Paulo, SP",area:"Big data & IA"},
   {nm:"EXPOMAFE",disp:"4–8 mai 2027",s:"2027-05-04",e:"2027-05-08",loc:"São Paulo, SP",area:"Máquinas-ferramenta & automação",url:"https://www.expomafe.com.br"}
 ];
-const ALL_FAIRS=[...FAIRS_WORLD,...FAIRS_BR];
+let ALL_FAIRS=[...FAIRS_WORLD,...FAIRS_BR];
 
 /* COTAÇÃO — pares (CNY incluído: China é central para tech) */
 const FX_PAIRS=[
@@ -1082,11 +1082,43 @@ function updateConverter(){
   document.getElementById("sup-cat").addEventListener("click",function(){if(catalog.hidden){showCatalog();}else{catalog.hidden=true;}});
   q.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();showCatalog();}});
 
+  /* busca difusa: ignora acentos e tolera erros de digitação por palavra */
+  function lev(a,b){
+    if(a===b)return 0; var la=a.length,lb=b.length;
+    if(!la)return lb; if(!lb)return la; if(Math.abs(la-lb)>3)return 99;
+    var prev=[],cur=[],i,j; for(j=0;j<=lb;j++)prev[j]=j;
+    for(i=1;i<=la;i++){ cur[0]=i;
+      for(j=1;j<=lb;j++){ var cost=a.charCodeAt(i-1)===b.charCodeAt(j-1)?0:1;
+        cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+cost); }
+      var tmp=prev;prev=cur;cur=tmp;
+    }
+    return prev[lb];
+  }
+  function fuzzyWord(qw,hwords){
+    var th=qw.length<=3?0:qw.length<=4?1:qw.length<=7?2:3,i,w;
+    for(i=0;i<hwords.length;i++){ w=hwords[i];
+      if(w.indexOf(qw)>=0 || (qw.length>=4 && qw.indexOf(w)>=0)) return true; }
+    if(th===0) return false;
+    for(i=0;i<hwords.length;i++){ w=hwords[i];
+      if(lev(qw,w)<=th) return true;
+      if(w.length>qw.length && lev(qw,w.slice(0,qw.length))<=th) return true; }
+    return false;
+  }
+  function catsLabel(s){return (s.cats||[]).map(function(c){return CATS[c]||c;}).join(" ");}
+  function fuzzyMatch(query,hay){
+    var nq=noAccent(query).trim(); if(!nq) return true;
+    var nh=noAccent(hay);
+    if(nq.length<=2) return nh.indexOf(nq)>=0;
+    var qWords=nq.split(/\s+/).filter(Boolean);
+    var hWords=nh.split(/[^a-z0-9]+/).filter(Boolean);
+    return qWords.every(function(qw){ return qw.length<2 ? true : fuzzyWord(qw,hWords); });
+  }
+
   function matches(s){
-    var v=(q.value||"").toLowerCase().trim();
+    var v=(q.value||"").trim();
     if(fcat.value && (s.cats||[]).indexOf(fcat.value)<0) return false;
     if(fcountry.value && s.pais!==fcountry.value) return false;
-    if(v){var hay=(s.nm+" "+(s.tag||"")+" "+(s.pais||"")).toLowerCase();if(hay.indexOf(v)<0)return false;}
+    if(v && !fuzzyMatch(v, s.nm+" "+(s.tag||"")+" "+(s.pais||"")+" "+catsLabel(s))) return false;
     return true;
   }
   function card(s){
@@ -1385,8 +1417,20 @@ document.querySelectorAll(".lang-switch button").forEach(b=>{
 /* ============================================================
    BOOT
    ============================================================ */
+async function loadCatalog(){
+  try{
+    const r=await fetch(API_BASE+"/api/catalog",{cache:"no-store"});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(Array.isArray(d.fairs)&&d.fairs.length)ALL_FAIRS=d.fairs;
+    if(Array.isArray(d.areas)&&d.areas.length)AREAS=d.areas;
+    renderPulse();renderAreas();renderFairs();buildAskChips();
+    if(window.__tvRefresh)window.__tvRefresh();
+  }catch(e){}
+}
 fillConvSelects();
 applyI18n();
+loadCatalog();
 showFxSkeleton();
 fetchFx();
 startFxLoop();
