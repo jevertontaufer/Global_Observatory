@@ -286,6 +286,24 @@
       "loc": "Lisboa, Portugal",
       "area": "Tecnologia, startups & IA",
       "url": "https://websummit.com"
+    },
+    {
+      "nm": "International IoT Exhibition (IOTE)",
+      "disp": "26–28 ago",
+      "s": "2026-08-26",
+      "e": "2026-08-28",
+      "loc": "Shenzhen, China",
+      "area": "IoT, AIoT & sensores",
+      "url": "https://eng.iotexpo.com.cn"
+    },
+    {
+      "nm": "China International Industrial Fair (CIIF)",
+      "disp": "12–16 out",
+      "s": "2026-10-12",
+      "e": "2026-10-16",
+      "loc": "Xangai, China",
+      "area": "Automação industrial, robótica & manufatura",
+      "url": "https://www.ciif-expo.com"
     }
   ],
   "areas": [
