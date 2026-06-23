@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Observatório de Tecnologia Global</title>
+<style>
+  :root{
+    --ink:#0A0A0B; --panel:#141416; --panel-2:#1C1C1F; --panel-3:#27272B;
+    --line:rgba(255,255,255,0.09); --line-2:rgba(255,255,255,0.16);
+    --text:#F2F2F3; --muted:#9A9AA0; --faint:#646469;
+    --accent:#E3B341; --up:#3FB950; --down:#E5252A;
+    --mono:'IBM Plex Mono',ui-monospace,monospace; --body:'Inter',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.6rem 1.2rem 4rem}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:1rem;margin-bottom:1.4rem}
+  h1{font-size:1.15rem;margin:0;font-weight:600}
+  h1 .em{color:var(--accent)}
+  .sub{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:0.04em}
+  a.back{font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;text-transform:uppercase;letter-spacing:0.08em}
+  a.back:hover{color:var(--text)}
+  h2{font-size:1rem;margin:1.8rem 0 0.4rem;font-weight:600}
+  h2 .ct{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:0.5rem}
+  .hint{color:var(--muted);font-size:0.84rem;margin:0 0 1rem}
+  .btn{font-family:var(--mono);font-size:12px;letter-spacing:0.04em;color:var(--text);background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;padding:0.55rem 0.9rem;cursor:pointer;transition:border-color .15s,color .15s}
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{border-color:var(--accent);color:var(--accent)}
+  .btn.danger{color:var(--down);border-color:transparent;background:transparent;padding:0.3rem 0.5rem}
+  .btn.danger:hover{border-color:var(--down)}
+  input,select{background:var(--panel-2);border:1px solid var(--line-2);border-radius:7px;color:var(--text);font-family:var(--body);font-size:0.9rem;padding:0.5rem 0.6rem;width:100%}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+  label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--faint);margin-bottom:0.25rem}
+  .field{min-width:0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1rem;margin-bottom:0.9rem}
+  .grid-fair{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.4fr 1.4fr;gap:0.7rem}
+  .grid-fair2{display:grid;grid-template-columns:2fr 1fr;gap:0.7rem;margin-top:0.7rem;align-items:end}
+  .grid-area{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.7rem}
+  .grid-area2{display:grid;grid-template-columns:0.8fr 1fr 0.7fr 0.7fr 1.4fr;gap:0.7rem;margin-top:0.7rem;align-items:end}
+  .row-head{display:flex;justify-content:flex-end;margin-bottom:0.4rem}
+  .toolbar{position:sticky;top:0;background:linear-gradient(var(--ink),var(--ink) 70%,transparent);padding:0.8rem 0;display:flex;gap:0.7rem;flex-wrap:wrap;align-items:center;z-index:5;margin-bottom:0.6rem}
+  .msg{font-family:var(--mono);font-size:12px;margin-left:auto}
+  .msg.ok{color:var(--up)} .msg.err{color:var(--down)} .msg.info{color:var(--muted)}
+  .gate{max-width:380px;margin:5rem auto;text-align:center}
+  .gate input{margin:1rem 0 0.8rem;text-align:center}
+  .gate .err{color:var(--down);font-family:var(--mono);font-size:12px;min-height:1.2em;margin-top:0.5rem}
+  .est-cb{display:flex;align-items:center;gap:0.4rem;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .est-cb input{width:auto}
+  .hidden{display:none}
+  @media (max-width:760px){ .grid-fair,.grid-fair2,.grid-area,.grid-area2{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="gate" class="gate">
+    <h1>Observatório — <span class="em">Admin</span></h1>
+    <div id="gate-body">
+      <p class="hint" style="margin-top:1.4rem">Carregando…</p>
+    </div>
+  </div>
+
+  <div id="app" class="hidden">
+    <header>
+      <div>
+        <h1>Observatório — <span class="em">Admin</span></h1>
+        <div class="sub">edite feiras e áreas · alterações entram no site ao salvar</div>
+      </div>
+      <a class="back" href="/">← voltar ao site</a>
+    </header>
+
+    <div class="toolbar">
+      <button class="btn primary" id="save">Salvar alterações</button>
+      <button class="btn" id="reload">Recarregar</button>
+      <button class="btn" id="export">Exportar JSON</button>
+      <span class="msg info" id="msg"></span>
+    </div>
+
+    <h2>Feiras <span class="ct" id="fair-ct"></span></h2>
+    <p class="hint">A data de início/fim define automaticamente o status (vai ocorrer / agora / encerrada) e a contagem. O continente é deduzido pelo país no campo “Local”. “Exibição” é o texto livre que aparece (ex.: “6–9 jan”).</p>
+    <div id="fairs"></div>
+    <button class="btn" id="add-fair">+ Adicionar feira</button>
+
+    <h2>Áreas <span class="ct" id="area-ct"></span></h2>
+    <p class="hint">“Crescimento” é o número (%) usado no ranking e nas barras. “Intensidade” controla a cor do indicador. “Busca de notícias” é o termo usado para puxar manchetes daquela área.</p>
+    <div id="areas"></div>
+    <button class="btn" id="add-area">+ Adicionar área</button>
+  </div>
+
+</div>
+
+<script>
+const API_BASE="";
+let PASS=sessionStorage.getItem("otg_admin_pass")||"";
+
+function el(tag,attrs,html){const e=document.createElement(tag);if(attrs)for(const k in attrs)e.setAttribute(k,attrs[k]);if(html!=null)e.innerHTML=html;return e;}
+function val(node,sel){const i=node.querySelector(sel);return i?i.value.trim():"";}
+function msg(text,kind){const m=document.getElementById("msg");m.textContent=text;m.className="msg "+(kind||"info");}
+
+/* ---------- gate ---------- */
+async function boot(){
+  let status;
+  try{ status=await (await fetch(API_BASE+"/api/admin/status")).json(); }
+  catch(e){ status={configured:false,offline:true}; }
+  const gb=document.getElementById("gate-body");
+  if(status.offline){ gb.innerHTML='<p class="hint" style="margin-top:1.4rem">Não foi possível falar com o servidor. O admin só funciona com o backend no ar.</p>'; return; }
+  if(!status.configured){
+    gb.innerHTML='<p class="hint" style="margin-top:1.4rem">O admin ainda não está configurado. Defina a variável de ambiente <b>ADMIN_PASSWORD</b> no servidor (Render) e recarregue esta página.</p>';
+    return;
+  }
+  gb.innerHTML=''+
+    '<p class="hint" style="margin-top:1.4rem">Informe a senha de administração.</p>'+
+    '<input type="password" id="pass" placeholder="senha" autocomplete="current-password">'+
+    '<button class="btn primary" id="enter" style="width:100%">Entrar</button>'+
+    '<div class="err" id="gate-err"></div>';
+  const pass=document.getElementById("pass"), err=document.getElementById("gate-err");
+  async function tryEnter(){
+    err.textContent="";
+    try{
+      const r=await fetch(API_BASE+"/api/admin/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pass:pass.value})});
+      if(r.ok){ PASS=pass.value; sessionStorage.setItem("otg_admin_pass",PASS); openApp(); }
+      else { const d=await r.json().catch(()=>({})); err.textContent=d.error||"Senha incorreta."; }
+    }catch(e){ err.textContent="Erro de conexão."; }
+  }
+  document.getElementById("enter").addEventListener("click",tryEnter);
+  pass.addEventListener("keydown",e=>{if(e.key==="Enter")tryEnter();});
+  pass.focus();
+}
+
+async function openApp(){
+  document.getElementById("gate").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  await loadCatalog();
+}
+
+/* ---------- carregar/render ---------- */
+async function loadCatalog(){
+  msg("carregando…","info");
+  try{
+    const d=await (await fetch(API_BASE+"/api/catalog",{cache:"no-store"})).json();
+    renderFairs(d.fairs||[]); renderAreas(d.areas||[]);
+    msg("catálogo carregado","ok");
+  }catch(e){ msg("falha ao carregar","err"); }
+}
+
+function fairCard(f){
+  f=f||{};
+  const c=el("div",{class:"card"});
+  c.innerHTML=
+    '<div class="row-head"><button class="btn danger" type="button" data-rm>remover</button></div>'+
+    '<div class="grid-fair">'+
+      fld("Nome","f-nm",f.nm)+fld("Exibição","f-disp",f.disp)+
+      fld("Início","f-s",f.s,"date")+fld("Fim","f-e",f.e,"date")+
+      fld("Local (cidade, país)","f-loc",f.loc)+
+    '</div>'+
+    '<div class="grid-fair2">'+
+      fld("Área / categoria","f-area",f.area)+fld("URL (opcional)","f-url",f.url)+
+    '</div>';
+  c.querySelector("[data-rm]").addEventListener("click",()=>c.remove(),false);
+  return c;
+}
+function areaCard(a){
+  a=a||{}; const nm=a.nm||{};
+  const c=el("div",{class:"card"});
+  c.innerHTML=
+    '<div class="row-head"><button class="btn danger" type="button" data-rm>remover</button></div>'+
+    '<div class="grid-area">'+
+      fld("Nome (PT)","a-pt",nm.pt)+fld("Nome (EN)","a-en",nm.en)+fld("Nome (ES)","a-es",nm.es)+
+    '</div>'+
+    '<div class="grid-area2">'+
+      sel("Intensidade","a-heat",a.heat,[["hot","quente"],["grow","crescendo"],["emerg","emergente"]])+
+      fld("Estatística","a-stat",a.stat)+
+      fld("Crescimento %","a-g",a.g==null?"":a.g,"number")+
+      '<div class="field"><label>Estimativa</label><span class="est-cb"><input type="checkbox" class="a-est"'+(a.est?" checked":"")+'> aprox.</span></div>'+
+      fld("Busca de notícias","a-gq",a.gq)+
+    '</div>';
+  c.querySelector("[data-rm]").addEventListener("click",()=>c.remove(),false);
+  return c;
+}
+function fld(label,cls,v,type){
+  return '<div class="field"><label>'+label+'</label><input type="'+(type||"text")+'" class="'+cls+'" value="'+escAttr(v==null?"":v)+'"></div>';
+}
+function sel(label,cls,v,opts){
+  let o=opts.map(([val,txt])=>'<option value="'+val+'"'+(v===val?" selected":"")+'>'+txt+'</option>').join("");
+  return '<div class="field"><label>'+label+'</label><select class="'+cls+'">'+o+'</select></div>';
+}
+function escAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
+
+function renderFairs(list){
+  const box=document.getElementById("fairs"); box.innerHTML="";
+  list.forEach(f=>box.appendChild(fairCard(f)));
+  document.getElementById("fair-ct").textContent=list.length+" itens";
+}
+function renderAreas(list){
+  const box=document.getElementById("areas"); box.innerHTML="";
+  list.forEach(a=>box.appendChild(areaCard(a)));
+  document.getElementById("area-ct").textContent=list.length+" itens";
+}
+
+/* ---------- coletar do DOM ---------- */
+function collectFairs(){
+  return [...document.querySelectorAll("#fairs .card")].map(c=>{
+    const f={nm:val(c,".f-nm"),disp:val(c,".f-disp"),s:val(c,".f-s"),e:val(c,".f-e"),loc:val(c,".f-loc"),area:val(c,".f-area")};
+    const u=val(c,".f-url"); if(u)f.url=u;
+    return f;
+  }).filter(f=>f.nm&&f.s);
+}
+function collectAreas(){
+  return [...document.querySelectorAll("#areas .card")].map(c=>({
+    nm:{pt:val(c,".a-pt"),en:val(c,".a-en"),es:val(c,".a-es")},
+    heat:val(c,".a-heat"),
+    stat:val(c,".a-stat"),
+    g:Number(val(c,".a-g"))||0,
+    est:c.querySelector(".a-est").checked,
+    gq:val(c,".a-gq")
+  })).filter(a=>a.nm.pt);
+}
+
+/* ---------- salvar / exportar ---------- */
+async function save(){
+  const payload={fairs:collectFairs(),areas:collectAreas()};
+  msg("salvando…","info");
+  try{
+    const r=await fetch(API_BASE+"/api/catalog",{method:"POST",headers:{"Content-Type":"application/json","x-admin-pass":PASS},body:JSON.stringify(payload)});
+    const d=await r.json().catch(()=>({}));
+    if(r.ok){ msg("salvo · "+d.fairs+" feiras, "+d.areas+" áreas","ok"); }
+    else if(r.status===401){ msg("sessão expirada — recarregue e entre de novo","err"); sessionStorage.removeItem("otg_admin_pass"); }
+    else { msg(d.error||"falha ao salvar","err"); }
+  }catch(e){ msg("erro de conexão","err"); }
+}
+function exportJson(){
+  const payload={fairs:collectFairs(),areas:collectAreas()};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="catalog.json";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  msg("JSON exportado — guarde como backup","info");
+}
+
+document.getElementById("save").addEventListener("click",save);
+document.getElementById("reload").addEventListener("click",loadCatalog);
+document.getElementById("export").addEventListener("click",exportJson);
+document.getElementById("add-fair").addEventListener("click",()=>{document.getElementById("fairs").appendChild(fairCard({}));});
+document.getElementById("add-area").addEventListener("click",()=>{document.getElementById("areas").appendChild(areaCard({}));});
+
+if(PASS){
+  (async()=>{
+    try{
+      const r=await fetch(API_BASE+"/api/admin/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pass:PASS})});
+      if(r.ok){ openApp(); return; }
+    }catch(e){}
+    sessionStorage.removeItem("otg_admin_pass"); PASS=""; boot();
+  })();
+} else { boot(); }
+</script>
+</body>
+</html>
