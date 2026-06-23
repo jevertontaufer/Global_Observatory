@@ -95,6 +95,88 @@ app.post("/api/suppliers", (req, res) => {
 });
 
 /* ============================================================
+   CATÁLOGO (feiras + áreas) — editável pelo painel /admin
+   Arquivo de gravação: DATA_DIR/catalog.json
+   Semente (fallback no repositório): ./catalog.seed.json
+   ============================================================ */
+const CAT_FILE = path.join(DATA_DIR, "catalog.json");
+const SEED_FILE = path.join(__dirname, "catalog.seed.json");
+
+function readSeed() {
+  try { return JSON.parse(fs.readFileSync(SEED_FILE, "utf8")); }
+  catch (e) { return { fairs: [], areas: [] }; }
+}
+function readCatalog() {
+  try { if (fs.existsSync(CAT_FILE)) return JSON.parse(fs.readFileSync(CAT_FILE, "utf8")); }
+  catch (e) {}
+  return readSeed();
+}
+function writeCatalog(obj) {
+  try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(CAT_FILE, JSON.stringify(obj, null, 2)); return true; }
+  catch (e) { return false; }
+}
+
+function sanitizeFair(f) {
+  f = f || {};
+  const out = {
+    nm: clean(f.nm, 120),
+    disp: clean(f.disp, 60),
+    s: clean(f.s, 10),
+    e: clean(f.e, 10),
+    loc: clean(f.loc, 120),
+    area: clean(f.area, 120)
+  };
+  const url = normUrl(f.url);
+  if (url) out.url = url;
+  return out;
+}
+function sanitizeArea(a) {
+  a = a || {};
+  const nm = a.nm || {};
+  return {
+    id: clean(a.id, 40) || ("a" + Math.random().toString(36).slice(2, 8)),
+    nm: { pt: clean(nm.pt, 80), en: clean(nm.en, 80), es: clean(nm.es, 80) },
+    heat: ["hot", "grow", "emerg"].includes(a.heat) ? a.heat : "grow",
+    stat: clean(a.stat, 60),
+    g: Math.max(0, Math.min(999, Math.round(Number(a.g) || 0))),
+    est: !!a.est,
+    gq: clean(a.gq, 120)
+  };
+}
+function sanitizeCatalog(b) {
+  b = b || {};
+  const fairs = (Array.isArray(b.fairs) ? b.fairs : []).slice(0, 200).map(sanitizeFair).filter(f => f.nm && /^\d{4}-\d{2}-\d{2}$/.test(f.s));
+  const areas = (Array.isArray(b.areas) ? b.areas : []).slice(0, 40).map(sanitizeArea).filter(a => a.nm.pt);
+  return { fairs, areas };
+}
+
+/* autenticação simples do admin via header x-admin-pass == ADMIN_PASSWORD */
+function adminConfigured() { return !!process.env.ADMIN_PASSWORD; }
+function checkAdmin(req) { return adminConfigured() && req.headers["x-admin-pass"] === process.env.ADMIN_PASSWORD; }
+
+app.get("/api/catalog", (req, res) => {
+  res.json(readCatalog());
+});
+app.get("/api/admin/status", (req, res) => {
+  res.json({ configured: adminConfigured() });
+});
+app.post("/api/admin/verify", (req, res) => {
+  if (!adminConfigured()) return res.status(503).json({ error: "Admin não configurado. Defina ADMIN_PASSWORD no servidor." });
+  const pass = (req.body && req.body.pass) || "";
+  if (pass !== process.env.ADMIN_PASSWORD) return res.status(401).json({ error: "Senha incorreta." });
+  res.json({ ok: true });
+});
+app.post("/api/catalog", (req, res) => {
+  if (!adminConfigured()) return res.status(503).json({ error: "Admin não configurado. Defina ADMIN_PASSWORD no servidor." });
+  if (!checkAdmin(req)) return res.status(401).json({ error: "Não autorizado." });
+  const cat = sanitizeCatalog(req.body);
+  if (!cat.fairs.length && !cat.areas.length) return res.status(400).json({ error: "Catálogo vazio ou inválido." });
+  cat.updatedAt = Date.now();
+  if (!writeCatalog(cat)) return res.status(500).json({ error: "Falha ao salvar." });
+  res.json({ ok: true, fairs: cat.fairs.length, areas: cat.areas.length });
+});
+
+/* ============================================================
    NOTÍCIAS — RSS do Google News -> JSON (com cache em memória)
    ============================================================ */
 const newsCache = new Map(); // key -> {ts, items}
@@ -382,9 +464,10 @@ app.get("/api/push/run", async (req, res) => {
 /* ============================================================
    ESTÁTICOS + boot
    ============================================================ */
-app.get("/api/health", (req, res) => res.json({ ok: true, ai: !!aiProvider(), provider: aiProvider(), push: pushReady, subs: readSubs().length, suppliers: readSuppliers().length }));
+app.get("/api/health", (req, res) => { const c = readCatalog(); res.json({ ok: true, ai: !!aiProvider(), provider: aiProvider(), push: pushReady, subs: readSubs().length, suppliers: readSuppliers().length, fairs: (c.fairs || []).length, areas: (c.areas || []).length, admin: adminConfigured() }); });
 
 app.use(express.static(__dirname, { extensions: ["html"] }));
+app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
 const PORT = process.env.PORT || 3000;
