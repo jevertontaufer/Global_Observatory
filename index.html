@@ -24,7 +24,7 @@
     --line:rgba(255,255,255,0.09); --line-2:rgba(255,255,255,0.16);
     --text:#F2F2F3; --muted:#9A9AA0; --faint:#646469;
     --hot:#E5252A; --grow:#F2F2F3; --emerg:#86868C;
-    --phosphor:#E5252A;
+    --phosphor:#E3B341;
     --up:#3FB950; --down:#E5252A; --now:#4C8DFF; --warn:#E3B341;
     --radius:10px;
     --display:'Space Grotesk',sans-serif; --mono:'IBM Plex Mono',monospace; --body:'Inter',sans-serif;
@@ -50,7 +50,7 @@
   .lang-switch{display:flex;gap:2px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;padding:2px}
   .lang-switch button{font-family:var(--mono);font-size:11px;letter-spacing:0.04em;background:transparent;border:0;color:var(--muted);padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;transition:all .15s}
   .lang-switch button:hover{color:var(--text)}
-  .lang-switch button[aria-pressed="true"]{background:var(--phosphor);color:#fff}
+  .lang-switch button[aria-pressed="true"]{background:var(--phosphor);color:var(--ink)}
   .head-controls{display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;justify-content:flex-end}
   .tv-enter-btn{font-family:var(--mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;padding:0.4rem 0.7rem;cursor:pointer;transition:color .15s,border-color .15s;display:flex;align-items:center;gap:6px}
   .tv-enter-btn:hover{color:var(--text);border-color:var(--phosphor)}
@@ -218,6 +218,10 @@
   .conv-note{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:0.6rem}
 
   footer{margin-top:3rem;border-top:1px solid var(--line);padding-top:1.6rem}
+  .to-top-wrap{display:flex;justify-content:center;padding:1.4rem 0 2.2rem}
+  .to-top{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--faint);background:transparent;border:0;cursor:pointer;padding:0.4rem 0.7rem;transition:color .15s}
+  .to-top:hover{color:var(--muted)}
+  .to-top:focus-visible{outline:2px solid var(--hot);outline-offset:2px;border-radius:4px}
   footer h4{font-family:var(--display);font-size:0.95rem;margin-bottom:0.5rem}
   footer p{font-size:0.82rem;color:var(--muted);max-width:80ch;margin-bottom:0.7rem}
   footer .srcs{font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.9}
@@ -319,7 +323,7 @@
   .tv-area-nm{font-family:var(--display);font-weight:600;font-size:clamp(1.3rem,3vmin,3rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .tv-area-nm small{display:block;font-family:var(--body);font-weight:400;font-size:1.7vmin;color:var(--muted);margin-top:0.3vmin}
   .tv-area-bar{height:2vmin;background:rgba(255,255,255,.07);border-radius:6px;overflow:hidden}
-  .tv-area-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--phosphor),#ff6b4a);width:0;transition:width 1s ease}
+  .tv-area-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--phosphor),var(--up));width:0;transition:width 1s ease}
   .tv-area-val{font-family:var(--mono);font-size:3.2vmin;font-weight:600;text-align:right;color:var(--up)}
 
   /* rodapé: progresso + ticker */
@@ -469,6 +473,10 @@
     </p>
   </footer>
 
+  <div class="to-top-wrap">
+    <button type="button" id="to-top" class="to-top">↑ <span data-i18n="toTop">Voltar ao topo</span></button>
+  </div>
+
 </main>
 
 <!-- catálogo base de fornecedores (seu arquivo atual) — carregado antes do app -->
@@ -584,7 +592,7 @@ const I18N={
     fxTitle:"Cotação em tempo real", refreshEvery:"Atualiza a cada", pause:"Pausar", resume:"Retomar", refreshNow:"Atualizar agora",
     lastUpd:"Atualizado", fxLoading:"Buscando cotação…", fxOk:"Ao vivo", fxErr:"Falha ao atualizar — tentando de novo", buy:"Compra", sell:"Venda", dayRange:"Mín/Máx do dia",
     convHead:"Conversor (usa a cotação ao vivo acima)", convNote:"Taxas de referência (compra). Não considera spread bancário.", convWait:"aguardando cotação…",
-    sourcesTitle:"Fontes consultadas"
+    sourcesTitle:"Fontes consultadas", toTop:"Voltar ao topo"
   },
   en:{
     locale:"en-US",
@@ -616,7 +624,7 @@ const I18N={
     fxTitle:"Live exchange rates", refreshEvery:"Refresh every", pause:"Pause", resume:"Resume", refreshNow:"Refresh now",
     lastUpd:"Updated", fxLoading:"Fetching rates…", fxOk:"Live", fxErr:"Update failed — retrying", buy:"Bid", sell:"Ask", dayRange:"Day low/high",
     convHead:"Converter (uses the live rates above)", convNote:"Reference rates (bid). Bank spread not included.", convWait:"waiting for rates…",
-    sourcesTitle:"Sources"
+    sourcesTitle:"Sources", toTop:"Back to top"
   },
   es:{
     locale:"es-ES",
@@ -648,7 +656,7 @@ const I18N={
     fxTitle:"Cotización en tiempo real", refreshEvery:"Actualiza cada", pause:"Pausar", resume:"Reanudar", refreshNow:"Actualizar ahora",
     lastUpd:"Actualizado", fxLoading:"Buscando cotización…", fxOk:"En vivo", fxErr:"Error al actualizar — reintentando", buy:"Compra", sell:"Venta", dayRange:"Mín/Máx del día",
     convHead:"Conversor (usa la cotización en vivo de arriba)", convNote:"Tasas de referencia (compra). No incluye spread bancario.", convWait:"esperando cotización…",
-    sourcesTitle:"Fuentes consultadas"
+    sourcesTitle:"Fuentes consultadas", toTop:"Volver arriba"
   }
 };
 
@@ -892,6 +900,8 @@ function closeAsk(){
   const out=document.getElementById("ask-out");
   out.classList.remove("show");
   out.innerHTML="";
+  const inp=document.getElementById("ask-input");
+  if(inp)inp.value="";
 }
 function renderAskResults(res,aiText){
   const out=document.getElementById("ask-out");
@@ -947,6 +957,7 @@ function buildAskChips(){
 document.getElementById("ask-go").addEventListener("click",runAsk);
 document.getElementById("ask-input").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();runAsk();}});
 document.getElementById("ask-out").addEventListener("click",e=>{if(e.target.closest(".ask-close")){closeAsk();}});
+document.getElementById("to-top").addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"}));
 
 /* ============================================================
    COTAÇÃO + estados + contagem regressiva + conversor
