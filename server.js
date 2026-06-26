@@ -238,6 +238,69 @@ app.get("/api/news", async (req, res) => {
 });
 
 /* ============================================================
+   MOMENTUM — sinal de mercado a partir do volume de notícias.
+   Conta artigos por dia (últimos 14d) e compara a semana recente
+   com a anterior. Cache em memória de 30 min por (lang|area).
+   Reusa decodeEntities() e clean() já definidos acima.
+   ============================================================ */
+const momentumCache = new Map();
+const MOMENTUM_TTL = 30 * 60 * 1000;
+const MOMENTUM_DAYS = 14;
+
+function parseRssDates(xml) {
+  const dates = [];
+  const blocks = xml.split(/<item>/).slice(1);
+  for (const blk of blocks) {
+    const body = blk.split(/<\/item>/)[0];
+    const m = body.match(/<pubDate[^>]*>([\s\S]*?)<\/pubDate>/);
+    if (!m) continue;
+    const d = new Date(decodeEntities(m[1]));
+    if (!isNaN(d)) dates.push(d);
+  }
+  return dates;
+}
+
+app.get("/api/momentum", async (req, res) => {
+  const area = clean(req.query.area, 120);
+  const lang = (clean(req.query.lang, 2) || "pt").toLowerCase();
+  if (!area) return res.status(400).json({ error: "Parâmetro 'area' é obrigatório." });
+  const map = { pt: ["pt-BR", "BR", "BR:pt-419"], en: ["en-US", "US", "US:en"], es: ["es-419", "BR", "BR:es-419"] };
+  const [hl, gl, ceid] = map[lang] || map.pt;
+  const key = lang + "|" + area;
+  const hit = momentumCache.get(key);
+  if (hit && Date.now() - hit.ts < MOMENTUM_TTL) return res.json({ ...hit.data, cached: true });
+  try {
+    const url = "https://news.google.com/rss/search?q=" + encodeURIComponent(area) +
+      "&hl=" + hl + "&gl=" + gl + "&ceid=" + encodeURIComponent(ceid);
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 8000);
+    const r = await fetch(url, { signal: ctrl.signal, headers: { "User-Agent": "Mozilla/5.0 (compatible; ObservatorioTech/1.0)" } });
+    clearTimeout(to);
+    if (!r.ok) throw new Error("rss " + r.status);
+    const xml = await r.text();
+    const dates = parseRssDates(xml);
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const buckets = new Array(MOMENTUM_DAYS).fill(0); // índice 0 = hoje
+    for (const d of dates) {
+      const dd = new Date(d); dd.setHours(0, 0, 0, 0);
+      const idx = Math.round((today - dd) / 86400000);
+      if (idx >= 0 && idx < MOMENTUM_DAYS) buckets[idx]++;
+    }
+    const series = buckets.slice().reverse(); // antigo -> recente (para o sparkline)
+    const half = Math.floor(MOMENTUM_DAYS / 2);
+    const recent = buckets.slice(0, half).reduce((a, b) => a + b, 0);
+    const prev   = buckets.slice(half).reduce((a, b) => a + b, 0);
+    const mom = prev > 0 ? Math.round((recent - prev) / prev * 100) : (recent > 0 ? 100 : 0);
+    const data = { series, total: recent + prev, recent, prev, mom, days: MOMENTUM_DAYS };
+    momentumCache.set(key, { ts: Date.now(), data });
+    res.json(data);
+  } catch (e) {
+    res.status(502).json({ error: "Sinal indisponível agora.", series: [] });
+  }
+});
+
+/* ============================================================
    COTAÇÃO — cache do AwesomeAPI (opcional; reduz chamadas)
    ============================================================ */
 let fxCache = { ts: 0, data: null };
