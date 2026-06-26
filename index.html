@@ -172,7 +172,6 @@
   .radar-leg{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.4rem}
   .radar-leg .ll{display:flex;align-items:center;gap:9px;font-size:.82rem;color:var(--muted)}
   .radar-leg .ll i{width:10px;height:10px;border-radius:50%;flex:none}
-  #tv-panel .tv-radar svg{width:min(46vh,520px);height:auto;display:block;margin:0 auto}
 
   /* notícias por área (acordeão) */
   .area-news{margin-top:0.5rem;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
@@ -336,8 +335,36 @@
   .tv-eyebrow .tag2{color:var(--faint)}
   .tv-eyebrow .spark{color:var(--phosphor)}
 
+  /* cena RADAR (TV) */
+  .tv-radar{display:flex;align-items:center;justify-content:center;flex:1;min-height:0}
+  .tv-radar svg{width:min(58vh,560px);height:auto;display:block}
+
+  /* abertura (intro) */
+  #tv-intro{position:absolute;inset:0;z-index:50;background:radial-gradient(circle at 50% 42%,#10141b 0%,var(--ink) 72%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.4vmin;opacity:1;transition:opacity .7s ease}
+  #tv-intro.gone{opacity:0;pointer-events:none}
+  #tv-intro .intro-radar{width:36vmin;height:36vmin}
+  #tv-intro .iring{transform-origin:120px 120px;opacity:0;animation:iring-in .9s cubic-bezier(.2,.8,.2,1) forwards}
+  #tv-intro .iring.r1{animation-delay:.05s}
+  #tv-intro .iring.r2{animation-delay:.18s}
+  #tv-intro .iring.r3{animation-delay:.31s}
+  #tv-intro .iring.r4{animation-delay:.44s}
+  #tv-intro .iaxis{opacity:0;animation:intro-fade .8s ease .5s forwards}
+  #tv-intro .isweep{transform-origin:120px 120px;animation:isweep 1.5s linear infinite}
+  #tv-intro .icore{opacity:0;animation:intro-fade .6s ease .6s forwards}
+  #tv-intro .intro-title{font-family:var(--display);font-weight:600;font-size:clamp(1.6rem,4.6vmin,3.6rem);letter-spacing:-0.01em;text-align:center;max-width:80%;opacity:0;transform:translateY(1.6vmin);animation:intro-up .8s ease .8s forwards}
+  #tv-intro .intro-sub{font-family:var(--mono);font-size:1.7vmin;letter-spacing:0.22em;text-transform:uppercase;color:var(--faint);opacity:0;transform:translateY(1.2vmin);animation:intro-up .8s ease 1.15s forwards}
+  @keyframes iring-in{0%{transform:scale(.18);opacity:0}55%{opacity:1}100%{transform:scale(1);opacity:1}}
+  @keyframes isweep{to{transform:rotate(360deg)}}
+  @keyframes intro-up{to{opacity:1;transform:none}}
+  @keyframes intro-fade{to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){
+    #tv-intro .iring,#tv-intro .iaxis,#tv-intro .isweep,#tv-intro .icore,#tv-intro .intro-title,#tv-intro .intro-sub{animation:none;opacity:1;transform:none}
+  }
+
   /* cena BRIEFING */
   .tv-brief-text{font-family:var(--display);font-weight:600;font-size:clamp(2rem,5.4vmin,6rem);line-height:1.16;letter-spacing:-0.015em;max-width:88%}
+  .tv-brief-text.typing::after{content:"▍";color:var(--phosphor);margin-left:.06em;animation:tv-caret 1s steps(1) infinite}
+  @keyframes tv-caret{50%{opacity:0}}
   .tv-brief-text .hl{color:var(--phosphor)}
   .tv-brief-facts{display:flex;gap:2.4vmin;margin-top:5vmin;flex-wrap:wrap}
   .tv-fact{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:2.2vmin 2.6vmin;min-width:24vmin}
@@ -1313,7 +1340,8 @@ document.querySelectorAll(".lang-switch button").forEach(b=>{
 (function(){
   const SCENE_MS=14000;
   const BRIEF_REFRESH_MS=20*60*1000;
-  let built=false, sceneIdx=0, sceneTimer=null, briefTimer=null, tvClockTimer=null, cursorTimer=null, wakeLock=null;
+  const INTRO_MS=2900;
+  let built=false, sceneIdx=0, sceneTimer=null, briefTimer=null, tvClockTimer=null, cursorTimer=null, wakeLock=null, introTimer=null, typeTimer=null, dailyTimer=null;
   let briefText="", briefTag="";
 
   function upcomingFairs(){
@@ -1337,10 +1365,12 @@ document.querySelectorAll(".lang-switch button").forEach(b=>{
         '<div class="tv-clockwrap"><span class="tv-live"><span class="d"></span></span><span id="tv-clock">—</span></div></div>'+
       '<div class="tv-stage" id="tv-stage">'+
         '<div class="tv-scene" id="tv-s-0"></div><div class="tv-scene" id="tv-s-1"></div>'+
-        '<div class="tv-scene" id="tv-s-2"></div><div class="tv-scene" id="tv-s-3"></div></div>'+
+        '<div class="tv-scene" id="tv-s-2"></div><div class="tv-scene" id="tv-s-3"></div>'+
+        '<div class="tv-scene" id="tv-s-4"></div></div>'+
       '<div class="tv-bottom"><div class="tv-dots" id="tv-dots"></div>'+
         '<div class="tv-ticker"><div class="track" id="tv-ticker"></div></div>'+
-        '<div class="tv-qr" id="tv-qr"><div class="tv-qr-cap" id="tv-qr-cap"></div><img id="tv-qr-img" alt="QR"></div></div>';
+        '<div class="tv-qr" id="tv-qr"><div class="tv-qr-cap" id="tv-qr-cap"></div><img id="tv-qr-img" alt="QR"></div></div>'+
+      '<div id="tv-intro" class="gone" aria-hidden="true"></div>';
     document.body.appendChild(p);
     document.getElementById("tv-exit").addEventListener("click",exit);
     built=true;
@@ -1398,15 +1428,41 @@ document.querySelectorAll(".lang-switch button").forEach(b=>{
     body+='</div>';
     return eyebrow(t().tv.areas)+body;
   }
-  const SCENES=[renderBrief,renderFx,renderFairsScene,renderAreasScene];
+  function renderRadarScene(){
+    let inner="";
+    try{
+      RADAR_MODE="fairs";
+      if(typeof renderRadar==="function"){ renderRadar(); const s=document.querySelector("#radar-wrap svg"); if(s)inner=s.outerHTML; }
+    }catch(e){}
+    const win=(t().radar&&t().radar.window)||"";
+    return eyebrow((t().radarTitle||"Radar"),win)+'<div class="tv-radar">'+inner+'</div>';
+  }
+  const SCENES=[renderBrief,renderFx,renderFairsScene,renderAreasScene,renderRadarScene];
+
+  function typewriter(el){
+    if(!el)return;
+    const full=el.textContent, len=full.length;
+    if(typeTimer){clearInterval(typeTimer);typeTimer=null;}
+    if(!len)return;
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches){ el.textContent=full; return; }
+    const dur=1300, tick=24, perTick=Math.max(1,Math.ceil(len/(dur/tick)));
+    let i=0; el.textContent=""; el.classList.add("typing");
+    typeTimer=setInterval(()=>{
+      i=Math.min(len,i+perTick); el.textContent=full.slice(0,i);
+      if(i>=len){ clearInterval(typeTimer); typeTimer=null; el.classList.remove("typing"); }
+    },tick);
+  }
 
   function renderScene(i){
     sceneIdx=i;
     const el=document.getElementById("tv-s-"+i); if(!el)return;
+    if(typeTimer){clearInterval(typeTimer);typeTimer=null;}
     el.innerHTML=SCENES[i]();
     for(let k=0;k<SCENES.length;k++){ document.getElementById("tv-s-"+k).classList.toggle("on",k===i); }
     // anima as barras de áreas
     if(i===3){ requestAnimationFrame(()=>el.querySelectorAll(".tv-area-bar i").forEach(b=>{const w=b.style.width;b.style.width="0";requestAnimationFrame(()=>b.style.width=w);})); }
+    // briefing entra letra a letra (efeito "boot")
+    if(i===0){ typewriter(el.querySelector(".tv-brief-text")); }
     document.querySelectorAll("#tv-dots button").forEach((b,k)=>b.classList.toggle("on",k===i));
   }
   function renderDots(){
@@ -1470,18 +1526,48 @@ document.querySelectorAll(".lang-switch button").forEach(b=>{
     }catch(e){ box.style.display="none"; }
   }
 
+  function stopIntro(){ if(introTimer){clearTimeout(introTimer);introTimer=null;} const h=document.getElementById("tv-intro"); if(h)h.classList.add("gone"); }
+  function msToNextMidnight(){ const n=new Date(); return new Date(n.getFullYear(),n.getMonth(),n.getDate()+1,0,0,5)-n; }
+  function dailyRun(){ if(document.body.classList.contains("tv-active")){ playIntro(); fetchBrief(); } }
+  function scheduleDailyIntro(){
+    stopDailyIntro();
+    dailyTimer=setTimeout(()=>{ dailyRun(); dailyTimer=setInterval(dailyRun,86400000); }, msToNextMidnight());
+  }
+  function stopDailyIntro(){ if(dailyTimer){clearTimeout(dailyTimer);clearInterval(dailyTimer);dailyTimer=null;} }
+  function playIntro(){
+    const host=document.getElementById("tv-intro"); if(!host)return;
+    const rings=[40,68,96,118].map((r,i)=>'<circle class="iring r'+(i+1)+'" cx="120" cy="120" r="'+r+'" fill="none" stroke="'+(i===3?"var(--line-2)":"var(--line)")+'" stroke-width="1.2"/>').join("");
+    const svg='<svg class="intro-radar" viewBox="0 0 240 240" aria-hidden="true">'+rings+
+      '<line class="iaxis" x1="120" y1="10" x2="120" y2="230" stroke="var(--line)" stroke-width="1"/>'+
+      '<line class="iaxis" x1="10" y1="120" x2="230" y2="120" stroke="var(--line)" stroke-width="1"/>'+
+      '<g class="isweep"><path d="M120,120 L120,18 A102,102 0 0 1 192,48 Z" fill="var(--hot)" opacity="0.12"/>'+
+        '<line x1="120" y1="120" x2="120" y2="18" stroke="var(--hot)" stroke-width="2" opacity="0.9"/></g>'+
+      '<circle class="icore" cx="120" cy="120" r="4" fill="var(--phosphor)"/></svg>';
+    let dateStr=""; try{ dateStr=new Intl.DateTimeFormat(t().locale,{weekday:"long",day:"2-digit",month:"long",year:"numeric"}).format(new Date()); }catch(e){}
+    host.innerHTML=svg+
+      '<div class="intro-title">'+esc(t().title)+'</div>'+
+      '<div class="intro-sub">'+esc(dateStr)+'</div>';
+    host.classList.remove("gone");
+    void host.offsetWidth; // reinicia as animações a cada entrada
+    if(introTimer)clearTimeout(introTimer);
+    introTimer=setTimeout(()=>host.classList.add("gone"),INTRO_MS);
+  }
+
   function enter(){
     build(); applyTvLabels();
     document.body.classList.add("tv-active");
     try{ const u=new URL(location.href); u.searchParams.set("tv","1"); history.replaceState(null,"",u); }catch(e){}
     buildTicker(); sceneIdx=0; renderDots(); renderScene(0);
     setupQr();
+    playIntro(); scheduleDailyIntro();
     startRotation(); startTvClock(); acquireWake();
     fetchBrief(); startBriefTimer();
     window.addEventListener("mousemove",pokeCursor); pokeCursor();
   }
   function exit(){
     document.body.classList.remove("tv-active","tv-cursor");
+    stopIntro(); stopDailyIntro();
+    if(typeTimer){clearInterval(typeTimer);typeTimer=null;}
     stopRotation(); stopBriefTimer(); stopTvClock(); releaseWake();
     window.removeEventListener("mousemove",pokeCursor);
     try{ const u=new URL(location.href); u.searchParams.delete("tv"); history.replaceState(null,"",u); }catch(e){}
