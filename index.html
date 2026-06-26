@@ -129,10 +129,12 @@
   .esc-mom{display:flex;align-items:center;gap:.55rem;flex:0 0 auto;min-width:128px;justify-content:flex-end}
   .esc-mom .spark{display:block;height:20px;width:72px;opacity:0;transition:opacity .4s ease}
   .esc-mom.ready .spark{opacity:1}
-  .esc-mom .mom{font-family:var(--mono);font-size:11px;letter-spacing:.02em;white-space:nowrap;color:var(--faint);display:inline-flex;align-items:center;gap:3px}
+  .esc-mom .mom{font-family:var(--mono);font-size:11px;letter-spacing:.02em;white-space:nowrap;color:var(--faint);display:inline-flex;align-items:center;gap:4px;cursor:default}
   .esc-mom .mom.up{color:var(--up)} .esc-mom .mom.down{color:var(--down)} .esc-mom .mom.flat{color:var(--muted)}
-  .esc-mom .mom .lbl{color:var(--faint);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase}
-  @media (max-width:760px){ .esc-mom{min-width:0} .esc-mom .mom .lbl{display:none} }
+  .esc-mom .mom .word{font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+  .esc-mom .mom .pct{color:var(--faint);font-size:10px}
+  @media (max-width:760px){ .esc-mom{min-width:0} .esc-mom .mom .pct{display:none} }
+  .area-measure{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.02em;margin:-0.5rem 0 1.1rem}
 
   /* radar */
   .radar-tabs{display:flex;gap:2px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;padding:2px;width:max-content;margin-bottom:1.1rem}
@@ -170,8 +172,6 @@
   .radar-leg{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.4rem}
   .radar-leg .ll{display:flex;align-items:center;gap:9px;font-size:.82rem;color:var(--muted)}
   .radar-leg .ll i{width:10px;height:10px;border-radius:50%;flex:none}
-  .radar-axes{font-family:var(--mono);font-size:10.5px;color:var(--faint);line-height:1.7}
-  .radar-axes b{color:var(--text);font-weight:500}
   #tv-panel .tv-radar svg{width:min(46vh,520px);height:auto;display:block;margin:0 auto}
 
   /* notícias por área (acordeão) */
@@ -434,7 +434,6 @@
 
   <section class="sec" id="radar">
     <div class="sec-head"><h2 data-i18n="radarTitle">Radar</h2><span class="count" id="radar-count"></span></div>
-    <p class="sec-intro" data-i18n="radarIntro">Tudo que está chegando, de relance.</p>
     <div class="radar-tabs" role="tablist">
       <button id="rt-fairs" role="tab" aria-pressed="true" data-i18n="radarTabFairs">Feiras</button>
       <button id="rt-areas" role="tab" aria-pressed="false" data-i18n="radarTabAreas">Áreas</button>
@@ -444,7 +443,6 @@
       <div class="radar-side">
         <div class="rs-title" data-i18n="radarLegend">Legenda</div>
         <div class="radar-leg" id="radar-leg"></div>
-        <div class="radar-axes" id="radar-axes"></div>
       </div>
     </div>
   </section>
@@ -471,6 +469,7 @@
       <span><span class="dot cat-yellow"></span><span data-i18n="legGrow">Em expansão</span></span>
       <span><span class="dot cat-blue"></span><span data-i18n="legEmerg">Emergente</span></span>
     </div>
+    <div class="area-measure" data-i18n="momHow"></div>
     <div class="esc" id="area-grid"></div>
   </section>
 
@@ -646,7 +645,8 @@ const I18N={
     areasTitle:"Áreas da tecnologia", areasIntro:"Ritmo de crescimento por área. Clique para abrir notícias recentes.",
     radarTitle:"Radar", radarIntro:"Tudo que está chegando, de relance. Feiras se aproximam do centro conforme a data chega; por área, o que mais cresce fica no miolo.",
     radarTabFairs:"Feiras", radarTabAreas:"Áreas", radarLegend:"Legenda",
-    radar:{ fairsCount:"feiras à frente", areasCount:"áreas", axesFairs:"<b>Distância</b> = tempo até a feira (centro = mais perto de hoje).<br><b>Ângulo</b> = continente. <b>Pulso</b> = começa em até 75 dias.", axesAreas:"<b>Distância</b> = crescimento (centro = maior alta).<br><b>Cor</b> = intensidade da área." },
+    momUp:"aquecendo", momDown:"esfriando", momFlat:"estável", momHow:"Sinal de notícias: volume de manchetes nos últimos 14 dias, variação vs. semana anterior.",
+    radar:{ fairsCount:"feiras à frente", areasCount:"áreas", window:"próximos 90 dias" },
     areaCount:"7 áreas · ritmo de crescimento", perYr:"/ano", est:" (est.)",
     legHot:"Alta tração", legGrow:"Em expansão", legEmerg:"Emergente", newsHead:"Notícias recentes", newsMore:"ver mais no Google News",
     newsLoading:"Carregando notícias…", newsNone:"Sem manchetes agora.",
@@ -681,7 +681,8 @@ const I18N={
     areasTitle:"Technology areas", areasIntro:"Growth pace by area. Click to open recent news.",
     radarTitle:"Radar", radarIntro:"Everything incoming, at a glance. Fairs move toward the center as the date nears; by area, the fastest-growing sit in the middle.",
     radarTabFairs:"Fairs", radarTabAreas:"Areas", radarLegend:"Legend",
-    radar:{ fairsCount:"fairs ahead", areasCount:"areas", axesFairs:"<b>Distance</b> = time to the fair (center = nearer today).<br><b>Angle</b> = continent. <b>Pulse</b> = starts within 75 days.", axesAreas:"<b>Distance</b> = growth (center = strongest).<br><b>Color</b> = area intensity." },
+    momUp:"heating up", momDown:"cooling", momFlat:"steady", momHow:"News signal: headline volume over the last 14 days, change vs. the previous week.",
+    radar:{ fairsCount:"fairs ahead", areasCount:"areas", window:"next 90 days" },
     areaCount:"7 areas · growth pace", perYr:"/yr", est:" (est.)",
     legHot:"High traction", legGrow:"Expanding", legEmerg:"Emerging", newsHead:"Recent news", newsMore:"more on Google News",
     newsLoading:"Loading news…", newsNone:"No headlines right now.",
@@ -716,7 +717,8 @@ const I18N={
     areasTitle:"Áreas de tecnología", areasIntro:"Ritmo de crecimiento por área. Haz clic para abrir noticias recientes.",
     radarTitle:"Radar", radarIntro:"Todo lo que llega, de un vistazo. Las ferias se acercan al centro a medida que llega la fecha; por área, las de mayor crecimiento quedan en el centro.",
     radarTabFairs:"Ferias", radarTabAreas:"Áreas", radarLegend:"Leyenda",
-    radar:{ fairsCount:"ferias por delante", areasCount:"áreas", axesFairs:"<b>Distancia</b> = tiempo hasta la feria (centro = más cerca de hoy).<br><b>Ángulo</b> = continente. <b>Pulso</b> = empieza en hasta 75 días.", axesAreas:"<b>Distancia</b> = crecimiento (centro = mayor).<br><b>Color</b> = intensidad del área." },
+    momUp:"calentando", momDown:"enfriando", momFlat:"estable", momHow:"Señal de noticias: volumen de titulares en los últimos 14 días, variación vs. la semana anterior.",
+    radar:{ fairsCount:"ferias por delante", areasCount:"áreas", window:"próximos 90 días" },
     areaCount:"7 áreas · ritmo de crecimiento", perYr:"/año", est:" (est.)",
     legHot:"Alta tracción", legGrow:"En expansión", legEmerg:"Emergente", newsHead:"Noticias recientes", newsMore:"más en Google News",
     newsLoading:"Cargando noticias…", newsNone:"Sin titulares por ahora.",
@@ -793,8 +795,10 @@ function sparklineSvg(series,color){
     '<circle cx="'+xy[n-1][0].toFixed(1)+'" cy="'+xy[n-1][1].toFixed(1)+'" r="1.8" fill="'+color+'"/></svg>';
 }
 function momChip(mom){
-  const cls=mom>4?"up":mom<-4?"down":"flat", arrow=cls==="up"?"▲":cls==="down"?"▼":"→";
-  return '<span class="mom '+cls+'"><span class="lbl">14d</span>'+arrow+' '+(mom>0?"+":"")+mom+'%</span>';
+  const cls=mom>=15?"up":mom<=-15?"down":"flat";
+  const word=cls==="up"?t().momUp:cls==="down"?t().momDown:t().momFlat;
+  const arrow=cls==="up"?"▲":cls==="down"?"▼":"→";
+  return '<span class="mom '+cls+'" title="'+esc(t().momHow)+'">'+arrow+' <span class="word">'+esc(word)+'</span> <span class="pct">'+(mom>0?"+":"")+mom+'%</span></span>';
 }
 const _momCache={};
 async function loadAllMomentum(){
@@ -1515,9 +1519,10 @@ function ringsSvg(labels){
   return s;
 }
 function renderRadarFairs(){
-  const up=ALL_FAIRS.map(f=>({...f,st:fairStatus(f.s,f.e),cont:continentOf(f)})).filter(f=>f.st.k!=="past");
-  const maxDays=Math.max(60,...up.map(f=>f.st.days||0));
-  const labels=[0.25,0.5,0.75,1].map(f=>({f,t:"≈"+Math.max(1,Math.round(f*maxDays/30))+"m"}));
+  const WINDOW=90;
+  const up=ALL_FAIRS.map(f=>({...f,st:fairStatus(f.s,f.e),cont:continentOf(f)})).filter(f=>f.st.k==="now"||(f.st.k==="up"&&f.st.days<=WINDOW));
+  const maxDays=WINDOW;
+  const labels=[0.25,0.5,0.75,1].map(f=>({f,t:(Math.round(f*maxDays/5)*5)+"d"}));
   let svg='<svg viewBox="0 0 440 440" role="img" aria-label="Radar">'+ringsSvg(labels);
   Object.keys(CONT_ANGLE).forEach(c=>{ const [x,y]=polN(CONT_ANGLE[c],RAD_R+16);
     svg+='<text class="rg-contlbl" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" dominant-baseline="middle">'+esc(CONT_NAMES[c]?CONT_NAMES[c][LANG]:c)+'</text>'; });
@@ -1528,7 +1533,7 @@ function renderRadarFairs(){
       const off=arr.length===1?0:(-span/2+span*(i/(arr.length-1)));
       const r=Math.max(RAD_R*0.12, RAD_R*Math.min(1,(f.st.days||0)/maxDays));
       const [x,y]=polN(base+off,r), col=f.st.k==="now"?"#4C8DFF":"#3FB950";
-      const ping=(f.st.days!=null&&f.st.days<=75)?" pinging":"";
+      const ping=(f.st.k==="now"||(f.st.days!=null&&f.st.days<=14))?" pinging":"";
       svg+='<g class="blip'+ping+'" tabindex="0" role="button" data-nm="'+esc(f.nm)+'" data-when="'+esc(statusText(f.st))+'" data-meta="'+esc(f.loc+" · "+f.area)+'" data-url="'+esc(fairUrl(f))+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+
         '<circle class="halo" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="11" fill="'+col+'" style="transform-origin:'+x.toFixed(1)+'px '+y.toFixed(1)+'px"/>'+
         '<circle class="core" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4.5" fill="'+col+'"/></g>';
@@ -1536,11 +1541,10 @@ function renderRadarFairs(){
   });
   svg+='</svg>';
   document.getElementById("radar-wrap").insertAdjacentHTML("afterbegin",svg);
-  document.getElementById("radar-count").textContent=up.length+" "+t().radar.fairsCount;
+  document.getElementById("radar-count").textContent=up.length+" "+t().radar.fairsCount+" · "+t().radar.window;
   document.getElementById("radar-leg").innerHTML=
     '<div class="ll"><i style="background:#3FB950"></i>'+esc(t().legUp)+'</div>'+
     '<div class="ll"><i style="background:#4C8DFF"></i>'+esc(t().legNow)+'</div>';
-  document.getElementById("radar-axes").innerHTML=t().radar.axesFairs;
 }
 function renderRadarAreas(){
   const arr=[...AREAS], maxG=Math.max(...arr.map(a=>a.g));
@@ -1561,7 +1565,6 @@ function renderRadarAreas(){
     '<div class="ll"><i style="background:#3FB950"></i>'+esc(t().legHot)+'</div>'+
     '<div class="ll"><i style="background:#E3B341"></i>'+esc(t().legGrow)+'</div>'+
     '<div class="ll"><i style="background:#4C8DFF"></i>'+esc(t().legEmerg)+'</div>';
-  document.getElementById("radar-axes").innerHTML=t().radar.axesAreas;
 }
 function renderRadar(){
   const wrap=document.getElementById("radar-wrap"); if(!wrap)return;

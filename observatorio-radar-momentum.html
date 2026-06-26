@@ -50,10 +50,12 @@
   .esc-mom{display:flex;align-items:center;gap:.55rem;flex:0 0 auto;min-width:128px;justify-content:flex-end}
   .esc-mom .spark{display:block;height:20px;width:72px;opacity:0;transition:opacity .4s ease}
   .esc-mom.ready .spark{opacity:1}
-  .esc-mom .mom{font-family:var(--mono);font-size:11px;letter-spacing:.02em;white-space:nowrap;color:var(--faint);display:inline-flex;align-items:center;gap:3px}
+  .esc-mom .mom{font-family:var(--mono);font-size:11px;letter-spacing:.02em;white-space:nowrap;color:var(--faint);display:inline-flex;align-items:center;gap:4px;cursor:default}
   .esc-mom .mom.up{color:var(--up)} .esc-mom .mom.down{color:var(--down)} .esc-mom .mom.flat{color:var(--muted)}
-  .esc-mom .mom .lbl{color:var(--faint);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase}
-  @media (max-width:760px){ .esc-mom{min-width:0} .esc-mom .mom .lbl{display:none} }
+  .esc-mom .mom .word{font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+  .esc-mom .mom .pct{color:var(--faint);font-size:10px}
+  @media (max-width:760px){ .esc-mom{min-width:0} .esc-mom .mom .pct{display:none} }
+  .area-measure{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.02em;margin:-0.5rem 0 1.1rem}
   /* ===== FIM COPIAR : sparkline ===== */
 
   /* ===== COPIAR P/ index.html : RADAR ===== */
@@ -92,8 +94,6 @@
   .radar-leg{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.4rem}
   .radar-leg .ll{display:flex;align-items:center;gap:9px;font-size:.82rem;color:var(--muted)}
   .radar-leg .ll i{width:10px;height:10px;border-radius:50%;flex:none}
-  .radar-axes{font-family:var(--mono);font-size:10.5px;color:var(--faint);line-height:1.7}
-  .radar-axes b{color:var(--text);font-weight:500}
   /* ===== FIM COPIAR : RADAR ===== */
 </style>
 </head>
@@ -111,7 +111,6 @@
   <!-- RADAR -->
   <section class="sec" id="radar">
     <div class="sec-head"><h2>Radar</h2><span class="count" id="radar-count"></span></div>
-    <p class="sec-intro">Tudo que está chegando, de relance. Feiras se aproximam do centro conforme a data se aproxima de hoje; por área, o que mais cresce fica no miolo.</p>
     <div class="radar-tabs" role="tablist">
       <button id="rt-fairs" role="tab" aria-pressed="true">Feiras</button>
       <button id="rt-areas" role="tab" aria-pressed="false">Áreas</button>
@@ -123,7 +122,6 @@
       <div class="radar-side">
         <div class="rs-title">Legenda</div>
         <div class="radar-leg" id="radar-leg"></div>
-        <div class="radar-axes" id="radar-axes"></div>
       </div>
     </div>
   </section>
@@ -137,6 +135,7 @@
       <span><span class="dot cat-yellow"></span>Em expansão</span>
       <span><span class="dot cat-blue"></span>Emergente</span>
     </div>
+    <div class="area-measure">Sinal de notícias: volume de manchetes nos últimos 14 dias, variação vs. semana anterior.</div>
     <div class="esc" id="area-grid"></div>
   </section>
 
@@ -219,8 +218,10 @@ function sparklineSvg(series,color){
     '<circle cx="'+xy[n-1][0].toFixed(1)+'" cy="'+xy[n-1][1].toFixed(1)+'" r="1.8" fill="'+color+'"/></svg>';
 }
 function momChip(mom){
-  const cls=mom>4?"up":mom<-4?"down":"flat", arrow=cls==="up"?"▲":cls==="down"?"▼":"→";
-  return '<span class="mom '+cls+'"><span class="lbl">14d</span>'+arrow+' '+(mom>0?"+":"")+mom+'%</span>';
+  const cls=mom>=15?"up":mom<=-15?"down":"flat";
+  const word=cls==="up"?"aquecendo":cls==="down"?"esfriando":"estável";
+  const arrow=cls==="up"?"▲":cls==="down"?"▼":"→";
+  return '<span class="mom '+cls+'" title="Sinal de notícias: volume de manchetes nos últimos 14 dias, variação vs. semana anterior.">'+arrow+' <span class="word">'+word+'</span> <span class="pct">'+(mom>0?"+":"")+mom+'%</span></span>';
 }
 /* gerador de preview (substituído pelo /api/momentum no site) */
 function fakeSeries(seedStr,heat,g){
@@ -306,15 +307,13 @@ function ringsSvg(labels){
 }
 
 function renderRadarFairs(){
-  const up=ALL_FAIRS.map(f=>({...f,st:fairStatus(f.s,f.e),cont:continentOf(f)})).filter(f=>f.st.k!=="past");
-  const maxDays=Math.max(60,...up.map(f=>f.st.days||0));
-  // rótulos de anel = meses
-  const labels=[0.25,0.5,0.75,1].map(f=>({f,t:"≈"+Math.max(1,Math.round(f*maxDays/30))+"m"}));
+  const WINDOW=90;
+  const up=ALL_FAIRS.map(f=>({...f,st:fairStatus(f.s,f.e),cont:continentOf(f)})).filter(f=>f.st.k==="now"||(f.st.k==="up"&&f.st.days<=WINDOW));
+  const maxDays=WINDOW;
+  const labels=[0.25,0.5,0.75,1].map(f=>({f,t:(Math.round(f*maxDays/5)*5)+"d"}));
   let svg='<svg viewBox="0 0 440 440" role="img" aria-label="Radar de feiras">'+ringsSvg(labels);
-  // rótulos de continente
   Object.keys(CONT_ANGLE).forEach(c=>{ const [x,y]=polN(CONT_ANGLE[c],R+16);
     svg+='<text class="rg-contlbl" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" text-anchor="middle" dominant-baseline="middle">'+esc(CONT_SHORT[c])+'</text>'; });
-  // agrupa por continente p/ espalhar dentro do setor
   const byCont={}; up.forEach(f=>{ (byCont[f.cont]=byCont[f.cont]||[]).push(f); });
   Object.keys(byCont).forEach(c=>{
     const arr=byCont[c].sort((a,b)=>(a.st.days||0)-(b.st.days||0));
@@ -324,7 +323,7 @@ function renderRadarFairs(){
       const r=Math.max(R*0.12, R*Math.min(1,(f.st.days||0)/maxDays));
       const [x,y]=polN(base+off,r);
       const col=f.st.k==="now"?"#4C8DFF":"#3FB950";
-      const ping=(f.st.days!=null&&f.st.days<=75)?" pinging":"";
+      const ping=(f.st.k==="now"||(f.st.days!=null&&f.st.days<=14))?" pinging":"";
       svg+='<g class="blip'+ping+'" tabindex="0" role="button" data-nm="'+esc(f.nm)+'" data-when="'+esc(statusText(f.st))+'" data-meta="'+esc(f.loc+" · "+f.area)+'" data-url="'+esc(fairUrl(f))+'" data-x="'+x.toFixed(1)+'" data-y="'+y.toFixed(1)+'">'+
         '<circle class="halo" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="11" fill="'+col+'" style="transform-origin:'+x.toFixed(1)+'px '+y.toFixed(1)+'px"/>'+
         '<circle class="core" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4.5" fill="'+col+'"/></g>';
@@ -332,12 +331,10 @@ function renderRadarFairs(){
   });
   svg+='</svg>';
   document.getElementById("radar-wrap").insertAdjacentHTML("afterbegin",svg);
-  document.getElementById("radar-count").textContent=up.length+" feiras à frente";
+  document.getElementById("radar-count").textContent=up.length+" feiras à frente · próximos 90 dias";
   document.getElementById("radar-leg").innerHTML=
     '<div class="ll"><i style="background:#3FB950"></i>vão ocorrer</div>'+
     '<div class="ll"><i style="background:#4C8DFF"></i>acontecendo agora</div>';
-  document.getElementById("radar-axes").innerHTML=
-    '<b>Distância</b> = tempo até a feira (centro = mais perto de hoje).<br><b>Ângulo</b> = continente. <b>Pulso</b> = começa em até 75 dias.';
 }
 
 function renderRadarAreas(){
@@ -361,8 +358,6 @@ function renderRadarAreas(){
     '<div class="ll"><i style="background:#3FB950"></i>Alta tração</div>'+
     '<div class="ll"><i style="background:#E3B341"></i>Em expansão</div>'+
     '<div class="ll"><i style="background:#4C8DFF"></i>Emergente</div>';
-  document.getElementById("radar-axes").innerHTML=
-    '<b>Distância</b> = crescimento (centro = maior alta).<br><b>Cor</b> = intensidade da área.';
 }
 
 function renderRadar(){
