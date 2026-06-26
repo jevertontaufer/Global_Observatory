@@ -672,7 +672,7 @@ const I18N={
     areasTitle:"Áreas da tecnologia", areasIntro:"Ritmo de crescimento por área. Clique para abrir notícias recentes.",
     radarTitle:"Radar", radarIntro:"Tudo que está chegando, de relance. Feiras se aproximam do centro conforme a data chega; por área, o que mais cresce fica no miolo.",
     radarTabFairs:"Feiras", radarTabAreas:"Áreas", radarLegend:"Legenda",
-    momUp:"aquecendo", momDown:"esfriando", momFlat:"estável", momHow:"Sinal de notícias: volume de manchetes nos últimos 14 dias, variação vs. semana anterior.",
+    momUp:"aquecendo", momFlat:"mantendo", momHow:"Sinal de notícias: volume de manchetes nos últimos 14 dias, variação vs. semana anterior.",
     radar:{ fairsCount:"feiras à frente", areasCount:"áreas", window:"próximos 90 dias" },
     areaCount:"7 áreas · ritmo de crescimento", perYr:"/ano", est:" (est.)",
     legHot:"Alta tração", legGrow:"Em expansão", legEmerg:"Emergente", newsHead:"Notícias recentes", newsMore:"ver mais no Google News",
@@ -708,7 +708,7 @@ const I18N={
     areasTitle:"Technology areas", areasIntro:"Growth pace by area. Click to open recent news.",
     radarTitle:"Radar", radarIntro:"Everything incoming, at a glance. Fairs move toward the center as the date nears; by area, the fastest-growing sit in the middle.",
     radarTabFairs:"Fairs", radarTabAreas:"Areas", radarLegend:"Legend",
-    momUp:"heating up", momDown:"cooling", momFlat:"steady", momHow:"News signal: headline volume over the last 14 days, change vs. the previous week.",
+    momUp:"heating up", momFlat:"holding", momHow:"News signal: headline volume over the last 14 days, change vs. the previous week.",
     radar:{ fairsCount:"fairs ahead", areasCount:"areas", window:"next 90 days" },
     areaCount:"7 areas · growth pace", perYr:"/yr", est:" (est.)",
     legHot:"High traction", legGrow:"Expanding", legEmerg:"Emerging", newsHead:"Recent news", newsMore:"more on Google News",
@@ -744,7 +744,7 @@ const I18N={
     areasTitle:"Áreas de tecnología", areasIntro:"Ritmo de crecimiento por área. Haz clic para abrir noticias recientes.",
     radarTitle:"Radar", radarIntro:"Todo lo que llega, de un vistazo. Las ferias se acercan al centro a medida que llega la fecha; por área, las de mayor crecimiento quedan en el centro.",
     radarTabFairs:"Ferias", radarTabAreas:"Áreas", radarLegend:"Leyenda",
-    momUp:"calentando", momDown:"enfriando", momFlat:"estable", momHow:"Señal de noticias: volumen de titulares en los últimos 14 días, variación vs. la semana anterior.",
+    momUp:"calentando", momFlat:"manteniendo", momHow:"Señal de noticias: volumen de titulares en los últimos 14 días, variación vs. la semana anterior.",
     radar:{ fairsCount:"ferias por delante", areasCount:"áreas", window:"próximos 90 días" },
     areaCount:"7 áreas · ritmo de crecimiento", perYr:"/año", est:" (est.)",
     legHot:"Alta tracción", legGrow:"En expansión", legEmerg:"Emergente", newsHead:"Noticias recientes", newsMore:"más en Google News",
@@ -822,10 +822,10 @@ function sparklineSvg(series,color){
     '<circle cx="'+xy[n-1][0].toFixed(1)+'" cy="'+xy[n-1][1].toFixed(1)+'" r="1.8" fill="'+color+'"/></svg>';
 }
 function momChip(mom){
-  const cls=mom>=15?"up":mom<=-15?"down":"flat";
-  const word=cls==="up"?t().momUp:cls==="down"?t().momDown:t().momFlat;
-  const arrow=cls==="up"?"▲":cls==="down"?"▼":"→";
-  return '<span class="mom '+cls+'" title="'+esc(t().momHow)+'">'+arrow+' <span class="word">'+esc(word)+'</span> <span class="pct">'+(mom>0?"+":"")+mom+'%</span></span>';
+  if(mom>=15){
+    return '<span class="mom up" title="'+esc(t().momHow)+'">▲ <span class="word">'+esc(t().momUp)+'</span> <span class="pct">+'+mom+'%</span></span>';
+  }
+  return '<span class="mom flat" title="'+esc(t().momHow)+'">→ <span class="word">'+esc(t().momFlat)+'</span></span>';
 }
 const _momCache={};
 async function loadAllMomentum(){

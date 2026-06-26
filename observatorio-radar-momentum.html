@@ -218,10 +218,11 @@ function sparklineSvg(series,color){
     '<circle cx="'+xy[n-1][0].toFixed(1)+'" cy="'+xy[n-1][1].toFixed(1)+'" r="1.8" fill="'+color+'"/></svg>';
 }
 function momChip(mom){
-  const cls=mom>=15?"up":mom<=-15?"down":"flat";
-  const word=cls==="up"?"aquecendo":cls==="down"?"esfriando":"estável";
-  const arrow=cls==="up"?"▲":cls==="down"?"▼":"→";
-  return '<span class="mom '+cls+'" title="Sinal de notícias: volume de manchetes nos últimos 14 dias, variação vs. semana anterior.">'+arrow+' <span class="word">'+word+'</span> <span class="pct">'+(mom>0?"+":"")+mom+'%</span></span>';
+  const how="Sinal de notícias: volume de manchetes nos últimos 14 dias, variação vs. semana anterior.";
+  if(mom>=15){
+    return '<span class="mom up" title="'+how+'">▲ <span class="word">aquecendo</span> <span class="pct">+'+mom+'%</span></span>';
+  }
+  return '<span class="mom flat" title="'+how+'">→ <span class="word">mantendo</span></span>';
 }
 /* gerador de preview (substituído pelo /api/momentum no site) */
 function fakeSeries(seedStr,heat,g){
