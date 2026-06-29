@@ -650,7 +650,7 @@ const I18N={
     radarTabFairs:"Feiras", radarTabAreas:"Áreas", radarLegend:"Legenda",
     momUp:"aquecendo", momFlat:"mantendo", momHow:"Sinal de notícias: volume de manchetes nos últimos 14 dias, variação vs. semana anterior.",
     radar:{ fairsCount:"feiras à frente", areasCount:"áreas", window:"próximos 90 dias" },
-    globoTitle:"Globo", globoSub:"monitor de feiras · ao vivo", globoAhead:"feiras à frente", globoNext:"próxima", globoBase:"Novo Hamburgo (base)", globoDays:"dias",
+    globoTitle:"Globo", globoSub:"monitor de feiras · ao vivo", globoAhead:"feiras à frente", globoNext:"próxima", globoBase:"Novo Hamburgo", globoDays:"dias",
     areaCount:"7 áreas · ritmo de crescimento", perYr:"/ano", est:" (est.)",
     legHot:"Alta tração", legGrow:"Em expansão", legEmerg:"Emergente", newsHead:"Notícias recentes", newsMore:"ver mais no Google News",
     newsLoading:"Carregando notícias…", newsNone:"Sem manchetes agora.",
@@ -687,7 +687,7 @@ const I18N={
     radarTabFairs:"Fairs", radarTabAreas:"Areas", radarLegend:"Legend",
     momUp:"heating up", momFlat:"holding", momHow:"News signal: headline volume over the last 14 days, change vs. the previous week.",
     radar:{ fairsCount:"fairs ahead", areasCount:"areas", window:"next 90 days" },
-    globoTitle:"Globe", globoSub:"live fair monitor", globoAhead:"fairs ahead", globoNext:"next", globoBase:"Novo Hamburgo (base)", globoDays:"days",
+    globoTitle:"Globe", globoSub:"live fair monitor", globoAhead:"fairs ahead", globoNext:"next", globoBase:"Novo Hamburgo", globoDays:"days",
     areaCount:"7 areas · growth pace", perYr:"/yr", est:" (est.)",
     legHot:"High traction", legGrow:"Expanding", legEmerg:"Emerging", newsHead:"Recent news", newsMore:"more on Google News",
     newsLoading:"Loading news…", newsNone:"No headlines right now.",
@@ -724,7 +724,7 @@ const I18N={
     radarTabFairs:"Ferias", radarTabAreas:"Áreas", radarLegend:"Leyenda",
     momUp:"calentando", momFlat:"manteniendo", momHow:"Señal de noticias: volumen de titulares en los últimos 14 días, variación vs. la semana anterior.",
     radar:{ fairsCount:"ferias por delante", areasCount:"áreas", window:"próximos 90 días" },
-    globoTitle:"Globo", globoSub:"monitor de ferias · en vivo", globoAhead:"ferias por delante", globoNext:"próxima", globoBase:"Novo Hamburgo (base)", globoDays:"días",
+    globoTitle:"Globo", globoSub:"monitor de ferias · en vivo", globoAhead:"ferias por delante", globoNext:"próxima", globoBase:"Novo Hamburgo", globoDays:"días",
     areaCount:"7 áreas · ritmo de crecimiento", perYr:"/año", est:" (est.)",
     legHot:"Alta tracción", legGrow:"En expansión", legEmerg:"Emergente", newsHead:"Noticias recientes", newsMore:"más en Google News",
     newsLoading:"Cargando noticias…", newsNone:"Sin titulares por ahora.",
@@ -1602,7 +1602,7 @@ function createGlobe(canvas, opts){
   const ctx=canvas.getContext("2d");
   const LAND=unpackLand(), home=gsph(GLOBO_HOME.lat,GLOBO_HOME.lng);
   let W=0,H=0,DPR=1,cx=0,cy=0,R=0, ry=0; const rx=0.41;
-  let beams=[], beamIdx=0, lastSpawn=0, raf=null, running=false;
+  let beams=[], beamIdx=0, lastSpawn=0, raf=null, running=false, lastMarkers=[];
   let mouse={x:-1,y:-1};
   const SPAWN_MS=950, TRAVEL_MS=1500;
 
@@ -1637,16 +1637,19 @@ function createGlobe(canvas, opts){
       if(prog>=1){const age=(t-b.born-TRAVEL_MS)/900,e=proj(b.b);if(e.z>0){ctx.beginPath();ctx.arc(e.x,e.y,4+age*16,0,G_PI*2);ctx.strokeStyle="rgba("+col+","+(0.5*(1-age)).toFixed(3)+")";ctx.lineWidth=1.5;ctx.stroke();}}
     }
     const mk=upcoming().map(o=>({f:o.f,st:o.st,s:proj(o.p)}));
+    lastMarkers=mk;
     let hover=null,hd=16;
     for(const m of mk){ if(m.s.z<=0.02)continue; const col=m.st.k==="now"?"#4C8DFF":"#E3B341"; if(opts.tip){const d=Math.hypot(m.s.x-mouse.x,m.s.y-mouse.y);if(d<hd){hd=d;hover=m;}} ctx.beginPath();ctx.arc(m.s.x,m.s.y,7,0,G_PI*2);ctx.fillStyle=(m.st.k==="now"?"rgba(76,141,255,0.18)":"rgba(227,179,65,0.16)");ctx.fill();ctx.beginPath();ctx.arc(m.s.x,m.s.y,2.6,0,G_PI*2);ctx.fillStyle=col;ctx.fill(); }
     const hp=proj(home); if(hp.z>0){ctx.beginPath();ctx.arc(hp.x,hp.y,4,0,G_PI*2);ctx.fillStyle="#fff";ctx.fill();ctx.beginPath();ctx.arc(hp.x,hp.y,8+Math.sin(t/350)*2,0,G_PI*2);ctx.strokeStyle="rgba(255,255,255,0.5)";ctx.lineWidth=1;ctx.stroke();}
-    if(opts.tip){ const tip=opts.tip; if(hover){const rect=canvas.getBoundingClientRect();tip.innerHTML='<div class="tnm">'+esc(hover.f.nm)+'</div><div class="tmeta"><span class="twhen">'+esc(statusText(hover.st))+'</span><br>'+esc(hover.f.loc)+'</div>';tip.style.left=(rect.left+hover.s.x)+"px";tip.style.top=(rect.top+hover.s.y)+"px";tip.classList.add("show");} else tip.classList.remove("show"); }
+    if(opts.tip){ canvas.style.cursor=hover?"pointer":"default"; const tip=opts.tip; if(hover){const rect=canvas.getBoundingClientRect();tip.innerHTML='<div class="tnm">'+esc(hover.f.nm)+'</div><div class="tmeta"><span class="twhen">'+esc(statusText(hover.st))+'</span><br>'+esc(hover.f.loc)+'</div>';tip.style.left=(rect.left+hover.s.x)+"px";tip.style.top=(rect.top+hover.s.y)+"px";tip.classList.add("show");} else tip.classList.remove("show"); }
     raf=requestAnimationFrame(frame);
   }
   function onMove(e){const rect=canvas.getBoundingClientRect();mouse.x=e.clientX-rect.left;mouse.y=e.clientY-rect.top;}
   function onLeave(){mouse.x=-1;mouse.y=-1;if(opts.tip)opts.tip.classList.remove("show");}
-  function start(){ if(running)return; running=true; if(opts.tip){canvas.addEventListener("mousemove",onMove);canvas.addEventListener("mouseleave",onLeave);} raf=requestAnimationFrame(frame); }
-  function stop(){ running=false; if(raf)cancelAnimationFrame(raf); raf=null; if(opts.tip){canvas.removeEventListener("mousemove",onMove);canvas.removeEventListener("mouseleave",onLeave);} }
+  function hitMarker(mx,my){let best=null,bd=14;for(const m of lastMarkers){if(m.s.z<=0.02)continue;const d=Math.hypot(m.s.x-mx,m.s.y-my);if(d<bd){bd=d;best=m;}}return best;}
+  function onClick(e){const rect=canvas.getBoundingClientRect();const m=hitMarker(e.clientX-rect.left,e.clientY-rect.top);if(m){const u=(typeof fairUrl==="function")?fairUrl(m.f):(m.f.url||"");if(u)window.open(u,"_blank","noopener");}}
+  function start(){ if(running)return; running=true; if(opts.tip){canvas.addEventListener("mousemove",onMove);canvas.addEventListener("mouseleave",onLeave);canvas.addEventListener("click",onClick);} raf=requestAnimationFrame(frame); }
+  function stop(){ running=false; if(raf)cancelAnimationFrame(raf); raf=null; if(opts.tip){canvas.removeEventListener("mousemove",onMove);canvas.removeEventListener("mouseleave",onLeave);canvas.removeEventListener("click",onClick);} }
   function refresh(){
     const up=upcoming();
     if(opts.statUp)opts.statUp.textContent=up.length;
