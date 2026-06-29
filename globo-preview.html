@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Globo de feiras (estilo cibermapa)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#06080C; --panel:#101319; --line:rgba(255,255,255,0.09); --line-2:rgba(255,255,255,0.16);
+    --text:#F2F2F3; --muted:#9AA3AE; --faint:#5d6571;
+    --hot:#E5252A; --phosphor:#E3B341; --up:#3FB950; --now:#4C8DFF;
+    --display:'Space Grotesk',sans-serif; --mono:'IBM Plex Mono',monospace; --body:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--ink);color:var(--text);font-family:var(--body);overflow:hidden}
+  #stage{position:fixed;inset:0}
+  canvas{display:block;width:100%;height:100%}
+  .hud{position:fixed;left:0;right:0;top:0;padding:1.5rem 1.8rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;pointer-events:none}
+  .hud .title{font-family:var(--display);font-weight:600;font-size:1.15rem;letter-spacing:-0.01em}
+  .hud .title .em{color:var(--phosphor)}
+  .hud .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-top:.35rem}
+  .stat{font-family:var(--mono);text-align:right}
+  .stat .big{font-size:1.9rem;font-weight:600;color:var(--phosphor);line-height:1}
+  .stat .lbl{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-top:.3rem}
+  .legend{position:fixed;left:1.8rem;bottom:1.4rem;display:flex;gap:1.3rem;font-family:var(--mono);font-size:11px;color:var(--muted);pointer-events:none}
+  .legend span{display:flex;align-items:center;gap:7px}
+  .legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .next{position:fixed;right:1.8rem;bottom:1.4rem;font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;pointer-events:none}
+  .next b{color:var(--text);font-weight:500}
+  .next .cd{color:var(--phosphor)}
+  .tip{position:fixed;z-index:10;pointer-events:none;background:rgba(16,19,25,.96);border:1px solid var(--line-2);border-radius:9px;padding:.5rem .7rem;min-width:150px;max-width:240px;transform:translate(-50%,calc(-100% - 14px));opacity:0;transition:opacity .12s;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+  .tip.show{opacity:1}
+  .tip .tnm{font-family:var(--display);font-weight:600;font-size:.86rem;line-height:1.2}
+  .tip .tmeta{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
+  .tip .twhen{color:var(--phosphor)}
+  .note{position:fixed;left:50%;bottom:.5rem;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.04em;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="globe"></canvas></div>
+<div class="hud">
+  <div>
+    <div class="title">Observatório de <span class="em">Tecnologia Global</span></div>
+    <div class="sub">monitor de feiras · ao vivo</div>
+  </div>
+  <div class="stat"><div class="big" id="stat-up">—</div><div class="lbl">feiras à frente</div></div>
+</div>
+<div class="legend">
+  <span><i style="background:#E3B341"></i>vão ocorrer</span>
+  <span><i style="background:#4C8DFF"></i>agora</span>
+  <span><i style="background:#fff"></i>Novo Hamburgo (base)</span>
+</div>
+<div class="next" id="next"></div>
+<div class="tip" id="tip"></div>
+<div class="note">protótipo · pontos de terra reais · feixes Novo Hamburgo → próximas feiras</div>
+
+<script>
+"use strict";
+/* ===== mapa de terra (grid 2°, bitmask base64) ===== */
+const MASK_B64="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf4AP/AAAAAAAAAAAAAAAAAAAAAAAAX/z///+AAAAAAAABAAAAAAAAAAAAAYd8P///wAA+AAAAAA8AAAAAAAAAAAwAnw////4AAIAAAAAAGAAAAAAAAAAADivwAf//wAAAAADAAf/wAHYAAAAAADoi3sAP//gAAAAAMAD///sAAAAgBgACfwz/AD/+gAAAwAEHf///+/8gBAP/7/nJdjwD/+AAAH/AA7f///////f4P//////h8H/gAAAf/6//f////////Mf/////9H4D8AeAA+ev///////////AP/////4A0B4AAAD5/////////////Af3////gHgA4AAAH5///////////LwAHgH///gHkAAAAAH4/////////+CIAABAB///4D+AAAAGCx/////////4A8AAIAAf///n/gAAAOCD/////////wA4AAAAAf///n/wAAAbP///////////AgAAAAAP/////wAAADf//////////9AAAAAAAF////0YAAAB///////////9AAAAAAAD////8EAAAB///////////5AAAAAAAD////2AAAAB/f5fP//////wAAAAAAAD////gAAAAfxnwPP//////jAAAAAAAD////AAAAAPCb3/n/////+CAAAAAAAD///8AAAAAfALf/n////+ECAAAAAAAB///8AAAAAGHQP/n/////mMAAAAAAAA///8AAAAAH+Ai///////E8AAAAAAAAf//wAAAAAP/AA///////BgAAAAAAAAP//gAAAAAf/73///////gAAAAAAAAAD/AQAAAAAf////f/////gAAAAAAAAAF+AQAAAAB///+/n/////AAAAAAAAAAC+AAAAAAB///+f0H////AAAAAAAAAAAeAwAAAAD////f/B///8gAAAAAAAAAAeGEAAAAH////v+B/z/AAAAAAAAAAAAPMAgAAAD////n+A/B+gAAAAAAAAAAAD8AAAAAD////n4AeB/AgAAAAAAAAAAAPAAAAAH////3gAcAfAgAAAAAAAAAAADAAAAAD////6AAcAfggAAAAAAAAAAABDwAAAD////8wAMATAIAAAAAAAAAAAAr/AAAB/////gAKASAAAAAAAAAAAAAAH/gAAA/////gACAAAIAAAAAAAAAAAAH/8AAAaH///AAAAsGAAAAAAAAAAAAAH/+AAAAB//+AAAAUOAAAAAAAAAAAAAP/+AAAAB//8AAAAYegAAAAAAAAAAAAP//gAAAD//4AAAAMeBgAAAAAAAAAAAP//8AAAB//wAAAAGdiuAAAAAAAAAAAf///AAAA//wAAAACAQHgAAAAAAAAAAP///gAAA//wAAAABwAHwgAAAAAAAAAH///AAAA//wAAAAACIDQIAAAAAAAAAH//+AAAAf/wAAAAAAAAAAAAAAAAAAAD//+AAAA//wgAAAAABxAAAAAAAAAAAD//+AAAA//wgAAAAAPxgBAAAAAAAAAA//8AAAA//jgAAAAAf5gAAAAAAAAAAAf/8AAAA//DgAAAAAf/gAAAAAAAAAAAf/8AAAAf/DAAAAAD//4CAAAAAAAAAAf/wAAAAf/DAAAAAH//4AAAAAAAAAAAf/AAAAAf+CAAAAAH//8AAAAAAAAAAAf/AAAAAP8AAAAAAH//+AAAAAAAAAAA/+AAAAAP8AAAAAAH//+AAAAAAAAAAA/+AAAAAH4AAAAAAD//+AAAAAAAAAAA/8AAAAAHwAAAAAADwf8AAAAAAAAAAA/gAAAAAAAAAAAAACAH4AIAAAAAAAAB/wAAAAAAAAAAAAAAAD4AEAAAAAAAAB+AAAAAAAAAAAAAAAAAAAGAAAAAAAAB6AAAAAAAAAAAAAAAAAwAMAAAAAAAAA8AAAAAAAAAAAAAAAAAQAYAAAAAAAAB4AAAAAAAAAAAAAAAAAAAwAAAAAAAAB4AAAAAAAAAAAAAAAAAAAAAAAAAAAADwAAAAAAAAAACAAAAAAAAAAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAeAAIP+f/gAAAAAAAAAAAMAAAAAAABP/+H//////AAAAAAAAAAA+AAAAAf////8////////AAAAAAAOEAPAAAB///////////////gAAAP//T//8AAAH//////////////+AAAH/////4AAAH///////////////8AAE//////4ABw////////////////8AAAD//////gCA////////////////wAAAf/////////////////////////+A/4A///////////////////////////////////////////////////////////////////////////////////////";
+const STEP=2, COLS=180, ROWS=90;
+function unpackMask(){
+  const bin=atob(MASK_B64), dots=[];
+  for(let r=0;r<ROWS;r++){
+    const lat=90-STEP/2-r*STEP;
+    const keep=Math.max(1,Math.round(1/Math.max(0.18,Math.cos(lat*Math.PI/180)))); // afina perto dos polos
+    for(let c=0;c<COLS;c++){
+      const idx=r*COLS+c, byte=bin.charCodeAt(idx>>3), bit=(byte>>(7-(idx&7)))&1;
+      if(!bit) continue;
+      if(c%keep!==0) continue;
+      const lng=-180+STEP/2+c*STEP;
+      dots.push(sph(lat,lng));
+    }
+  }
+  return dots;
+}
+
+/* ===== feiras (coordenadas reais) ===== */
+const HOME={nm:"Novo Hamburgo",lat:-29.68,lng:-51.13};
+let FAIRS=[
+  {nm:"CES",s:"2026-01-06",e:"2026-01-09",loc:"Las Vegas, EUA",lat:36.17,lng:-115.14},
+  {nm:"MWC Barcelona",s:"2026-03-02",e:"2026-03-05",loc:"Barcelona, Espanha",lat:41.39,lng:2.16},
+  {nm:"GDC",s:"2026-03-09",e:"2026-03-13",loc:"San Francisco, EUA",lat:37.77,lng:-122.42},
+  {nm:"South Summit Brazil",s:"2026-03-25",e:"2026-03-27",loc:"Porto Alegre, RS",lat:-30.03,lng:-51.23},
+  {nm:"Canton Fair (1ª fase)",s:"2026-04-15",e:"2026-04-19",loc:"Guangzhou, China",lat:23.13,lng:113.26},
+  {nm:"Hannover Messe",s:"2026-04-20",e:"2026-04-24",loc:"Hannover, Alemanha",lat:52.38,lng:9.74},
+  {nm:"Google I/O",s:"2026-05-19",e:"2026-05-20",loc:"Mountain View, EUA",lat:37.39,lng:-122.08},
+  {nm:"COMPUTEX",s:"2026-06-02",e:"2026-06-05",loc:"Taipei, Taiwan",lat:25.03,lng:121.57},
+  {nm:"Web Summit Rio",s:"2026-06-08",e:"2026-06-11",loc:"Rio de Janeiro, RJ",lat:-22.91,lng:-43.17},
+  {nm:"Fispal Tecnologia",s:"2026-06-16",e:"2026-06-19",loc:"São Paulo, SP",lat:-23.55,lng:-46.63},
+  {nm:"Febraban Tech",s:"2026-08-24",e:"2026-08-26",loc:"São Paulo, SP",lat:-23.55,lng:-46.63},
+  {nm:"IFA Berlin",s:"2026-09-04",e:"2026-09-08",loc:"Berlim, Alemanha",lat:52.52,lng:13.40},
+  {nm:"TechCrunch Disrupt",s:"2026-09-15",e:"2026-09-17",loc:"San Francisco, EUA",lat:37.77,lng:-122.42},
+  {nm:"Futurecom",s:"2026-10-06",e:"2026-10-08",loc:"São Paulo, SP",lat:-23.55,lng:-46.63},
+  {nm:"Canton Fair (2ª fase)",s:"2026-10-15",e:"2026-10-19",loc:"Guangzhou, China",lat:23.13,lng:113.26},
+  {nm:"Big Data & AI Brazil",s:"2026-11-22",e:"2026-11-22",loc:"São Paulo, SP",lat:-23.55,lng:-46.63},
+  {nm:"SPS Nuremberg",s:"2026-11-24",e:"2026-11-26",loc:"Nuremberg, Alemanha",lat:49.45,lng:11.08},
+  {nm:"Slush",s:"2026-11-30",e:"2026-12-01",loc:"Helsinque, Finlândia",lat:60.17,lng:24.94},
+  {nm:"GITEX Global",s:"2026-12-07",e:"2026-12-11",loc:"Dubai, EAU",lat:25.20,lng:55.27},
+  {nm:"EXPOMAFE",s:"2027-05-04",e:"2027-05-08",loc:"São Paulo, SP",lat:-23.55,lng:-46.63}
+];
+
+/* ===== geometria da esfera ===== */
+const PI=Math.PI;
+function sph(lat,lng){const a=lat*PI/180,o=lng*PI/180;return {x:Math.cos(a)*Math.sin(o),y:Math.sin(a),z:Math.cos(a)*Math.cos(o)};}
+function fairStatus(s,e){
+  const now=new Date();now.setHours(0,0,0,0);
+  const st=new Date(s+"T00:00:00"),en=new Date((e||s)+"T23:59:59");
+  if(now>en)return{k:"past"};
+  if(now>=st&&now<=en)return{k:"now"};
+  return{k:"up",days:Math.ceil((st-now)/86400000)};
+}
+function whenText(st){return st.k==="now"?"acontecendo agora":st.days===0?"começa hoje":("em "+st.days+(st.days===1?" dia":" dias"));}
+
+/* ===== canvas ===== */
+const cv=document.getElementById("globe"), ctx=cv.getContext("2d");
+let W=0,H=0,DPR=1,cx=0,cy=0,R=0;
+let ry=0, rx=0.41; // giro Y, inclinação ~23° (norte pra cima, visível)
+const LAND=unpackMask();
+
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  W=window.innerWidth;H=window.innerHeight;
+  cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+  cx=W/2;cy=H/2;R=Math.min(W,H)*0.40;
+}
+window.addEventListener("resize",resize);resize();
+
+function rot(u){
+  const cY=Math.cos(ry),sY=Math.sin(ry),cX=Math.cos(rx),sX=Math.sin(rx);
+  const x1=u.x*cY+u.z*sY, z1=-u.x*sY+u.z*cY, y1=u.y;
+  return {x:x1, y:y1*cX - z1*sX, z:y1*sX + z1*cX};
+}
+function proj(u){const r=rot(u);return {x:cx+r.x*R, y:cy-r.y*R, z:r.z};}
+
+/* beams São Paulo -> próximas feiras */
+const home=sph(HOME.lat,HOME.lng);
+let beams=[], beamIdx=0, lastSpawn=0;
+const SPAWN_MS=900, TRAVEL_MS=1500;
+function dist3(a,b){return Math.acos(Math.max(-1,Math.min(1,a.x*b.x+a.y*b.y+a.z*b.z)));}
+function buildBeamTargets(){
+  return FAIRS.map(f=>({f,st:fairStatus(f.s,f.e),p:sph(f.lat,f.lng)}))
+    .filter(o=>o.st.k!=="past" && dist3(home,o.p)>0.04); // ignora feiras "em casa"
+}
+let TARGETS=buildBeamTargets();
+function spawnBeam(t){
+  if(!TARGETS.length)return;
+  const tg=TARGETS[beamIdx%TARGETS.length]; beamIdx++;
+  beams.push({a:home,b:tg.p,born:t,now:tg.st.k==="now"});
+}
+function beamPath(a,b){
+  const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2,z:(a.z+b.z)/2};
+  const ml=Math.hypot(mid.x,mid.y,mid.z)||1;
+  const ang=dist3(a,b), lift=1+(0.16+0.42*(ang/PI));
+  const M={x:mid.x/ml*lift,y:mid.y/ml*lift,z:mid.z/ml*lift};
+  return {a,M,b};
+}
+function bez(p,t){const u=1-t;return {
+  x:u*u*p.a.x+2*u*t*p.M.x+t*t*p.b.x,
+  y:u*u*p.a.y+2*u*t*p.M.y+t*t*p.b.y,
+  z:u*u*p.a.z+2*u*t*p.M.z+t*t*p.b.z};}
+
+/* marcadores */
+function markers(){
+  return FAIRS.map(f=>({f,st:fairStatus(f.s,f.e),s:proj(sph(f.lat,f.lng))})).filter(m=>m.st.k!=="past");
+}
+let MARKERS=[];
+
+/* loop */
+let mouse={x:-1,y:-1};
+cv.addEventListener("mousemove",e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+cv.addEventListener("mouseleave",()=>{mouse.x=-1;mouse.y=-1;});
+
+function frame(t){
+  ry+=0.0017;
+  ctx.clearRect(0,0,W,H);
+
+  // brilho de fundo
+  let g=ctx.createRadialGradient(cx,cy,R*0.2,cx,cy,R*1.7);
+  g.addColorStop(0,"rgba(40,90,120,0.22)");g.addColorStop(1,"rgba(6,8,12,0)");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+
+  // corpo do globo (esfera sombreada)
+  g=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.1,cx,cy,R);
+  g.addColorStop(0,"#0e1a26");g.addColorStop(0.7,"#0a121b");g.addColorStop(1,"#05080c");
+  ctx.beginPath();ctx.arc(cx,cy,R,0,PI*2);ctx.fillStyle=g;ctx.fill();
+
+  // limbo
+  ctx.beginPath();ctx.arc(cx,cy,R,0,PI*2);
+  ctx.strokeStyle="rgba(120,180,210,0.18)";ctx.lineWidth=1;ctx.stroke();
+
+  // pontos de terra (só hemisfério da frente)
+  for(let i=0;i<LAND.length;i++){
+    const r=rot(LAND[i]); if(r.z<=0.02)continue;
+    const x=cx+r.x*R, y=cy-r.y*R;
+    const a=0.18+r.z*0.55;
+    ctx.fillStyle="rgba(96,165,196,"+a.toFixed(3)+")";
+    ctx.fillRect(x,y,1.6,1.6);
+  }
+
+  // beams
+  if(t-lastSpawn>SPAWN_MS){spawnBeam(t);lastSpawn=t;}
+  beams=beams.filter(b=>t-b.born < TRAVEL_MS+900);
+  for(const b of beams){
+    const prog=Math.min(1,(t-b.born)/TRAVEL_MS);
+    const path=beamPath(b.a,b.b);
+    const col=b.now?"76,141,255":"227,179,65";
+    // trilha
+    const N=42; let started=false;
+    ctx.lineWidth=1.4;
+    for(let i=1;i<=N;i++){
+      const t0=(i-1)/N, t1=i/N; if(t1>prog)break;
+      const p0=proj(bez(path,t0)), p1=proj(bez(path,t1));
+      const headFade=Math.max(0,1-(prog-t1)*2.2);
+      const a=(0.15+0.85*(t1))*headFade;
+      ctx.strokeStyle="rgba("+col+","+a.toFixed(3)+")";
+      ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(p1.x,p1.y);ctx.stroke();
+    }
+    // cabeça
+    const head=proj(bez(path,prog));
+    ctx.beginPath();ctx.arc(head.x,head.y,2.4,0,PI*2);
+    ctx.fillStyle="rgba("+col+",0.95)";ctx.fill();
+    // impacto
+    if(prog>=1){
+      const age=(t-b.born-TRAVEL_MS)/900;
+      const e=proj(b.b);
+      if(e.z>0){
+        ctx.beginPath();ctx.arc(e.x,e.y,4+age*16,0,PI*2);
+        ctx.strokeStyle="rgba("+col+","+(0.5*(1-age)).toFixed(3)+")";ctx.lineWidth=1.5;ctx.stroke();
+      }
+    }
+  }
+
+  // marcadores
+  MARKERS=markers();
+  let hover=null,hd=16;
+  for(const m of MARKERS){
+    if(m.s.z<=0.02)continue;
+    const col=m.st.k==="now"?"#4C8DFF":"#E3B341";
+    const d=Math.hypot(m.s.x-mouse.x,m.s.y-mouse.y);
+    if(d<hd){hd=d;hover=m;}
+    ctx.beginPath();ctx.arc(m.s.x,m.s.y,7,0,PI*2);
+    ctx.fillStyle=(m.st.k==="now"?"rgba(76,141,255,0.18)":"rgba(227,179,65,0.16)");ctx.fill();
+    ctx.beginPath();ctx.arc(m.s.x,m.s.y,2.6,0,PI*2);ctx.fillStyle=col;ctx.fill();
+  }
+  // base (São Paulo)
+  const hp=proj(home);
+  if(hp.z>0){
+    ctx.beginPath();ctx.arc(hp.x,hp.y,4,0,PI*2);ctx.fillStyle="#fff";ctx.fill();
+    ctx.beginPath();ctx.arc(hp.x,hp.y,8+Math.sin(t/350)*2,0,PI*2);
+    ctx.strokeStyle="rgba(255,255,255,0.5)";ctx.lineWidth=1;ctx.stroke();
+  }
+
+  // tooltip
+  const tip=document.getElementById("tip");
+  if(hover){
+    tip.innerHTML='<div class="tnm">'+hover.f.nm+'</div><div class="tmeta"><span class="twhen">'+whenText(hover.st)+'</span><br>'+hover.f.loc+'</div>';
+    tip.style.left=hover.s.x+"px";tip.style.top=hover.s.y+"px";tip.classList.add("show");
+  }else tip.classList.remove("show");
+
+  requestAnimationFrame(frame);
+}
+
+/* HUD */
+(function hud(){
+  const up=FAIRS.map(f=>({f,st:fairStatus(f.s,f.e)})).filter(m=>m.st.k!=="past");
+  document.getElementById("stat-up").textContent=up.length;
+  const next=up.filter(m=>m.st.k==="up").sort((a,b)=>a.st.days-b.st.days)[0]
+          || up.find(m=>m.st.k==="now");
+  if(next){
+    const cd=next.st.k==="now"?"agora":next.st.days+" dias";
+    document.getElementById("next").innerHTML='próxima · <b>'+next.f.nm+'</b> — '+next.f.loc+' <span class="cd">('+cd+')</span>';
+  }
+})();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
