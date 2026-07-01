@@ -317,8 +317,24 @@
   .tv-eyebrow .spark{color:var(--phosphor)}
 
   /* cena RADAR (TV) */
-  .tv-globe{display:flex;align-items:center;justify-content:center;flex:1;min-height:0}
-  .tv-globe canvas{width:min(72vh,72vw);height:min(72vh,72vw);display:block}
+  .tv-globe-layout{flex:1;display:flex;gap:3vmin;min-height:0;align-items:center}
+  .tv-globe{flex:1.2;display:flex;align-items:center;justify-content:center;min-height:0;min-width:0}
+  .tv-globe canvas{width:min(60vh,52vw);height:min(60vh,52vw);display:block}
+  .tv-globe-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:2.4vmin;max-width:42vw}
+  .tv-globe-stat .n{font-family:var(--display);font-weight:600;font-size:clamp(2.4rem,8vmin,7rem);color:var(--phosphor);line-height:1}
+  .tv-globe-stat .l{font-family:var(--mono);font-size:1.7vmin;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:.6vmin}
+  .tv-glist{display:flex;flex-direction:column;gap:1.4vmin}
+  .tv-gfair{display:flex;align-items:center;gap:2vmin;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1.5vmin 2vmin}
+  .tv-gfair .when{font-family:var(--mono);font-size:1.6vmin;font-weight:600;border-radius:8px;padding:.8vmin 1.2vmin;min-width:14vmin;text-align:center;flex:none}
+  .tv-gfair .when.up{background:rgba(63,185,80,.16);color:var(--up);border:1px solid rgba(63,185,80,.4)}
+  .tv-gfair .when.now{background:rgba(76,141,255,.18);color:var(--now);border:1px solid rgba(76,141,255,.45)}
+  .tv-gfair .b{min-width:0;flex:1}
+  .tv-gfair .nm{font-family:var(--display);font-weight:600;font-size:2.4vmin;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tv-gfair .mt{font-size:1.6vmin;color:var(--muted);margin-top:.3vmin;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tv-glegend{display:flex;gap:2.2vmin;flex-wrap:wrap;font-family:var(--mono);font-size:1.5vmin;color:var(--muted)}
+  .tv-glegend span{display:flex;align-items:center;gap:.8vmin}
+  .tv-glegend i{width:1.2vmin;height:1.2vmin;border-radius:50%;display:inline-block}
+  @media (max-width:820px){ .tv-globe-layout{flex-direction:column} .tv-globe-side{max-width:none;width:100%} }
 
   /* abertura (intro) */
   #tv-intro{position:absolute;inset:0;z-index:50;background:radial-gradient(circle at 50% 42%,#10141b 0%,var(--ink) 72%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.4vmin;opacity:1;transition:opacity .7s ease}
@@ -1413,7 +1429,22 @@ document.querySelectorAll(".lang-switch button").forEach(b=>{
   }
   let tvGlobe=null;
   function renderGloboScene(){
-    return eyebrow(t().globoTitle||"Globo", t().globoSub||"")+'<div class="tv-globe"><canvas id="tv-globe-cv"></canvas></div>';
+    const up=upcomingFairs();
+    let list='<div class="tv-glist">';
+    up.slice(0,4).forEach(f=>{
+      list+='<div class="tv-gfair"><div class="when '+f.st.k+'">'+esc(statusText(f.st))+'</div>'+
+        '<div class="b"><div class="nm">'+esc(f.nm)+'</div><div class="mt">'+esc(f.loc)+'</div></div></div>';
+    });
+    list+='</div>';
+    const side='<div class="tv-globe-side">'+
+      '<div class="tv-globe-stat"><div class="n">'+up.length+'</div><div class="l">'+esc(t().globoAhead)+'</div></div>'+
+      list+
+      '<div class="tv-glegend"><span><i style="background:#E3B341"></i>'+esc(t().legUp)+'</span>'+
+        '<span><i style="background:#4C8DFF"></i>'+esc(t().legNow)+'</span>'+
+        '<span><i style="background:#fff"></i>'+esc(t().globoBase)+'</span></div>'+
+      '</div>';
+    return eyebrow(t().globoTitle||"Globo", t().globoSub||"")+
+      '<div class="tv-globe-layout"><div class="tv-globe"><canvas id="tv-globe-cv"></canvas></div>'+side+'</div>';
   }
   function mountTvGlobe(el){
     const cv=el.querySelector("#tv-globe-cv"); if(!cv)return;
@@ -1421,7 +1452,7 @@ document.querySelectorAll(".lang-switch button").forEach(b=>{
     tvGlobe=createGlobe(cv,{});
     tvGlobe.start();
   }
-  const SCENES=[renderBrief,renderFx,renderFairsScene,renderAreasScene,renderGloboScene];
+  const SCENES=[renderBrief,renderFx,renderAreasScene,renderGloboScene];
 
   function typewriter(el){
     if(!el)return;
@@ -1444,7 +1475,7 @@ document.querySelectorAll(".lang-switch button").forEach(b=>{
     el.innerHTML=SCENES[i]();
     for(let k=0;k<SCENES.length;k++){ document.getElementById("tv-s-"+k).classList.toggle("on",k===i); }
     // anima as barras de áreas
-    if(i===3){ requestAnimationFrame(()=>el.querySelectorAll(".tv-area-bar i").forEach(b=>{const w=b.style.width;b.style.width="0";requestAnimationFrame(()=>b.style.width=w);})); }
+    if(SCENES[i]===renderAreasScene){ requestAnimationFrame(()=>el.querySelectorAll(".tv-area-bar i").forEach(b=>{const w=b.style.width;b.style.width="0";requestAnimationFrame(()=>b.style.width=w);})); }
     // briefing entra letra a letra (efeito "boot")
     if(i===0){ typewriter(el.querySelector(".tv-brief-text")); }
     // globo na TV: liga o motor ao entrar na cena, desliga ao sair
